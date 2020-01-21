@@ -3,153 +3,33 @@
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, min-width=550px, initial-scale=1, user-scalable=no" />
-        	<link rel="stylesheet" href="./CSS/generic.css" />
+        <link rel="stylesheet" href="./CSS/generic.css" />
 
+		<script src="./JS/console.js"></script>
 		<script>
-			var counter = 0; // number of keys pressed
-			var cursorPosition = 0; // line position of the cursor
-			var lineLength = 0; // current length of line in pixel
-			
+		
 		</script>
 
 	</head>
 	<body id="main">
-		<div id="console">
-			<pre id="text"></pre>
+	<!--	<div id="console">
+			<div id="text" class="cursor text"></div>
 		</div>
+	-->
+		<div id="console">
+			<div id="text" class="text"><span id="cursor" class="cursor"></span></div>
+		</div>
+			
 		<script>
-			let textNode = document.getElementById("text");
-
-			//
-			// Handle normal without special meaning.
-			// 
-			function handleChars(_e, _textNode)
-			{
-			/*	if(_textNode.innerHTML === null)
-				{
-					_textNode.innerHTML = _e.key;
-				}
-				else 
-				{*/
-					_textNode.innerHTML += _e.key;
-			//	}
-				
-				console.log(String.fromCharCode(_e.keyCode));
-				
-				//Update cursor position
-				cursorPosition += 1;
-			}
-
-			//
-			// Handle the "Enter" key.
-			//
-			function handleEnter(_e, _textNode)
-			{
-				let b = _textNode.innerHTML;
-
-				// Set up new line content
-				let line = document.createElement("DIV");
-				line.innerHTML = b;
-				// Insert new line before the input line.
-				document.getElementById("console").insertBefore(line, _textNode);
-
-				//Clear the input line buffer
-				_textNode.innerHTML = "";
-				//Reset cursor position
-				cursorPosition = 0;
-
-				console.log(String.fromCharCode(_e.keyCode));
-			}
-
-			//
-			// Handles Backspace to delete the previous entered char.
-			//
-			function handleBackspace(_e, _textNode)
-			{
-				if(_textNode.innerHTML != null && _textNode.innerHTML.length > 0)
-				{
-					let b = String(_textNode.innerHTML);
-					_textNode.innerHTML = b.slice(0, b.length-1);
-					cursorPosition -= 1;
-				}
-			
-				console.log("Backspace Key Code: " + String.fromCharCode(_e.keyCode));
-				
-			}
-
-			//function handleArrowKeys(_e, _textNode){ // TODO}
-			
-			//
-			// Input Handler
-			//
-			function handleInput(e)
-			{
-				e.preventDefault();
-
-				switch(e.type)
-				{
-					case 'keydown':
-					case 'keypressed':
-					{
-						e.stopPropagation();
-
-						console.log(e);
-						console.log("Länge: " + e.key.length);
-
-						switch(e.keyCode)
-						{
-							case 13: // Return / Enter
-							{	
-								handleEnter(e, textNode); 
-								break;
-							}
-							
-							case 8: // Backspace
-							{	
-								handleBackspace(e, textNode);
-								break;
-							}
-							
-							default:
-							{
-								switch(e.key.length)
-								{
-									case 1: // no special keys, every printable keys length equals to 1 is accepted (stupid, but working)
-									{ 
-										handleChars(e, textNode);
-										break;
-									}
-									
-									default:
-									{	return; } // leave handler function, important!!
-								}
-							}
-						}
-						
-						
-						// Key counter
-						counter +=1;
-						console.log(counter);
-						
-						// Real buffer length, because key value might be some like "Enter" or "Backspace"
-						const i = window.getComputedStyle(textNode);
-						lineLength = (parseInt(i.getPropertyValue("font-size")) * (String(textNode.innerHTML).length));
-						
-						// Debug
-						console.log("Length in PX: " + lineLength);
-						console.log((String(textNode.innerHTML)));
-						console.log("Cursor position: " + cursorPosition);
-						
-						break;
-					}
-
-					default:
-					{ break; }
-				}
-			}
-
-			document.body.addEventListener("keydown", handleInput, true);
-
+			var con = new MyConsole();
+			console.log("Console: ", con);
+			con.init();
+			//let txtNode = document.getElementById("text");
+			//let buf = con.updateBuffer("Text", 0);
+			//con.updateCursorLine(txtNode, "Text", 4);
+			//buf = con.updateBuffer("Hallo", 1);
+			//con.updateCursorLine(txtNode, buf, 6);
 		</script>
+
 	</body>
 </html>
