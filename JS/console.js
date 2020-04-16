@@ -55,6 +55,9 @@ class MyConsole extends Object
 
 			// Register update function --TODO--
 			this.setIntervalId = setInterval(this.eventLoop.bind(this), FPS);
+			
+			//Refresh buffer and make cursor visible
+			this._clearConsoleLineBuffer();
 		}
 	}
 
@@ -104,7 +107,7 @@ class MyConsole extends Object
 					//this.textNode.innerHTML = _buffer + CURSOR_START + CURSOR_END;
 					this.textNode.innerHTML = _buffer;
 					this.textNode.appendChild(this.curNode);
-					//this.curNode.innerHTML = "";
+					this.curNode.innerHTML = "&nbsp"; // --> Space else Cursor would not be visible at the end of line
 					break;
 				}
 			default:
@@ -310,7 +313,7 @@ class MyConsole extends Object
 	
 
 	//
-	// Handles Backspace to delete the previous entered char. TODO: Anpassen auf neue Version!!!!
+	// TODO: Handles Backspace to delete the previous entered char. TODO: Anpassen auf neue Version!!!!
 	//
 	_handleBackspace(_e, _textNode)
 	{
@@ -343,8 +346,20 @@ class MyConsole extends Object
 				// Handle left arrow key, should move the cursor to the left
 				if(_textNode.innerHTML != null && this.cursorPosition > 0)
 				{
-					console.log(this.cursorPosition);
+					console.log("Cursor position: " + this.cursorPosition);
 					this.cursorPosition -= 1;
+					this.updateReqFlag = true;
+				}
+				break;
+			}
+
+			case 39: // Right arrow key
+			{
+				// Handle right arrow key, should move the cursor to the right
+				if(_textNode.innerHTML != null && this.cursorPosition < this.consoleBuffer.length)
+				{
+					console.log("Cursor position: " + this.cursorPosition);
+					this.cursorPosition += 1;
 					this.updateReqFlag = true;
 				}
 				break;
