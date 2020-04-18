@@ -144,7 +144,7 @@ class MyConsole extends Object
 	{
 		if(_chars.length > 0)
 		{
-			// New char inserted before the current cursor position.
+			// New char inserted before current cursor position.
 			let beforeCur = this.consoleBuffer.slice(0, _cursorPosition);
 			let afterCur = this.consoleBuffer.slice(_cursorPosition, this.consoleBuffer.length);
 			this.consoleBuffer = beforeCur + _chars + afterCur;
@@ -154,6 +154,50 @@ class MyConsole extends Object
 		this.updateReqFlag = true;
 		return this.consoleBuffer;
 	}
+
+
+	//
+	// Delete chars in Buffer at current cursor position.
+	//
+	// Parameter:	_numChars - Number of chars to be removed.
+	//				_position - before or after cursor position (true=after | false=before (default))
+	//
+	_removeCharsFromBuffer(_numChars=1, _position=false)
+	{
+		switch(_position)
+		{
+			case true:
+			{
+				if((this.cursorPosition + _numChars) <= this.consoleBuffer.length)
+				{
+					// preserve the chars before current cursor position.
+					let beforeCur = this.consoleBuffer.slice(0, this.cursorPosition);
+					// remove the chars directly after current cursor position 
+					let afterCur = this.consoleBuffer.slice((this.cursorPosition + _numChars), this.consoleBuffer.length);
+
+					this.consoleBuffer = beforeCur + afterCur;
+				}
+				break;
+			}
+			
+			case false:
+			{
+				if((this.cursorPosition - _numChars) >= 0 )
+				{
+					// remove the chars before current cursor position.
+					let beforeCur = this.consoleBuffer.slice(0, (this.cursorPosition - _numChars));
+					//preserve the chars after current cursor position 
+					let afterCur = this.consoleBuffer.slice(this.cursorPosition, this.consoleBuffer.length);
+
+					this.consoleBuffer = beforeCur + afterCur;
+					this.cursorPosition -= _numChars;
+				}
+				break;
+			}
+		}
+		return this.consoleBuffer;
+	}
+
 	
 	//
 	// Input Handler
@@ -194,6 +238,12 @@ class MyConsole extends Object
 					case 40: // Arrow Down
 					{
 						this._handleArrowKeys(e, this.textNode);
+						break;
+					}
+
+					case 46: // Delete key
+					{
+						this._handleDeleteKey(e, this.textNode);
 						break;
 					}
 				
@@ -260,34 +310,6 @@ class MyConsole extends Object
 		this.updateCursorLine(this.textNode, this.consoleBuffer, this.cursorPosition);
 	}
 
-
-	//
-	// Delete chars in front of the current cursor position.
-	//
-	// Parameter: _numChars - Number of chars to be removed.
-	//
-	_removeCharsBeforeCursor(_numChars)
-	{
-		// Delete char before the current cursor position.
-		let lenCharsAvailable = (this.cursorPosition - 1) - _numchars;
-
-		if(lenCharsAvailable >= 0)
-		{	
-			// remove the chars before the cursor first, save the remaining
-			let beforeCur = this.consoleBuffer.slice(0, (this.cursorPosition - _numChars));
-			// get the chars after the cursor
-			let afterCur = this.consoleBuffer.slice(_cursorPosition, this.consoleBuffer.length);
-			// update the buffer
-			this.consoleBuffer = beforeCur + afterCur;
-			// adjust the cursor position
-			this.cursorPosition = this.cursorPosition - _numChars;
-
-			// Update
-			this.updateReqFlag = true;
-			return this.consoleBuffer;
-		}
-	}
-
 	
 
 	//
@@ -317,20 +339,24 @@ class MyConsole extends Object
 	//
 	_handleBackspace(_e, _textNode)
 	{
-		if(_textNode.innerHTML != null && _textNode.innerHTML.length > 0)
-		{
-			//let b = String(_textNode.innerHTML);
-			//_textNode.innerHTML = b.slice(0, b.length-1);
-			let temp =  this.consoleBuffer.slice(0, (this.consoleBuffer.length-1))
-			this.cursorPosition -= 1;
-			this.updateBuffer(temp, this.cursorPosition);
+		this._removeCharsFromBuffer();
+		console.log("Textzeile nach Backspace: " + this.consoleBuffer);
+		// Update
+		this.updateReqFlag = true;
 
-			this.updateReqFlag = true;
-
-			console.log("Textzeile nach Backspace: " + this.consoleBuffer);
-		}
-			
 		console.log("Backspace Key Code: " + String.fromCharCode(_e.keyCode));
+	}
+
+
+	// 
+	// Handle delete key. Remove chars after current cursor position.
+	//
+	_handleDeleteKey(_e, _textNode)
+	{
+		this._removeCharsFromBuffer(1, true);
+		console.log("Textzeile nach Entf: " + this.consoleBuffer);
+		// Update
+		this.updateReqFlag = true;
 	}
 
 
