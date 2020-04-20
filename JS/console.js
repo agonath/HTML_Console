@@ -22,7 +22,7 @@ class MyConsole extends Object
 		this.lineLength = 0; // current length of line in pixel
 		this.textNode = document.getElementById("text");
 		this.cursorNode = document.getElementById("cursor");
-		this.consoleBuffer = String(""); // content of the input line
+		this.consoleBuffer = ""; // content of the input line
 		this.setIntervalId = 0;
 		this.lastTimeStamp = performance.now();
 		this.updateReqFlag = false; // is an update required?
