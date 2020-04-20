@@ -27,8 +27,6 @@ class MyConsole extends Object
 		this.lastTimeStamp = performance.now();
 		this.updateReqFlag = false; // is an update required?
 
-		
-		//this._init(_element); // set up the key handler and event loop
 
 		console.log("Console Version: " + VERSION);
 
@@ -37,6 +35,11 @@ class MyConsole extends Object
 		this.curNode = document.createElement("span");
 		this.curNode.setAttribute("class", "cursor");
 		this.curNode.setAttribute("id", "cursor");
+
+
+		//Test-Object
+		this.handlerArray = new Array(256);
+		
 	}
 
 
@@ -53,11 +56,33 @@ class MyConsole extends Object
 			const self = this; // needed to keep the reference of this to our console class object
 			_element.addEventListener("keydown", function(_e){ return self.handleInput(_e); } );
 
-			// Register update function --TODO--
+			// Register update function
 			this.setIntervalId = setInterval(this.eventLoop.bind(this), FPS);
 			
 			//Refresh buffer and make cursor visible
 			this._clearConsoleLineBuffer();
+
+			// Test for new input handler
+			/*for(let i=0; i<256; i++)
+			{
+				this.handlerArray[i] = (_e, _textNode) => { return this._handleChars(_e, _textNode);}; // default, handle every input as normal char
+			}
+			// Set function pointers, for special keys
+			this.handlerArray[8] = (_e, _textNode) => { return this._handleBackspace(_e, _textNode);}; // Backspace key is pressed
+			this.handlerArray[13] = (_e, _textNode) => { return this._handleEnter(_e, _textNode);}; // if Return/Enter key is pressed
+			this.handlerArray[37] = (_e, _textNode) => { return this._handleArrowKeys(_e, _textNode);}; // arrow key is pressed
+			this.handlerArray[38] = (_e, _textNode) => { return this._handleArrowKeys(_e, _textNode);};
+			this.handlerArray[39] = (_e, _textNode) => { return this._handleArrowKeys(_e, _textNode);};
+			this.handlerArray[40] = (_e, _textNode) => { return this._handleArrowKeys(_e, _textNode);};
+			this.handlerArray[46] = (_e, _textNode) => { return this._handleDeleteKey(_e, _textNode);}; // delete key is pressed
+
+			// ---|Debug|---
+			for(let i=0; i<256; i++)
+			{
+				console.log("Element " + i + " Wert: " + this.handlerArray[i]);
+			}
+			*/
+			
 		}
 	}
 
@@ -204,8 +229,6 @@ class MyConsole extends Object
 	//
 	handleInput(e)
 	{
-		//let self = this;
-
 		e.preventDefault();
 
 		switch(e.type)
@@ -214,9 +237,10 @@ class MyConsole extends Object
 			case 'keypressed':
 			{
 				e.stopPropagation();
-
-				console.log(e);
-				console.log("Länge: " + e.key.length);
+				
+				//---|Debug|---
+				//console.log(e);
+				//console.log("Länge: " + e.key.length);
 
 				switch(e.keyCode)
 				{
@@ -233,11 +257,26 @@ class MyConsole extends Object
 					}
 
 					case 37: // Arrow Left
+					{
+						this._handleLeftArrowKey(e, this.textNode);
+						break;
+					}
+
 					case 38: // Arrow Up
+					{
+						_handleArrowKeysDummy(e, this.textNode);
+						break;
+					}
+					
 					case 39: // Arrow Right
+					{
+						this._handleRightArrowKey(e, this.textNode);
+						break;
+					}
+
 					case 40: // Arrow Down
 					{
-						this._handleArrowKeys(e, this.textNode);
+						this._handleArrowKeysDummy(e, this.textNode);
 						break;
 					}
 
@@ -249,33 +288,24 @@ class MyConsole extends Object
 				
 					default:
 					{
-						switch(e.key.length)
-						{
-							case 1: // no special keys, every printable keys length equals to 1 is accepted (stupid, but working)
-							{ 
-								this._handleChars(e, this.textNode);
-								break;
-							}
-						
-							default:
-							{	return; } // leave handler function, important!!							}
-						}
+						this._handleChars(e, this.textNode);
+						break;
 					}	
 						
-					// Key counter
-					this.counter +=1;
-					console.log(this.counter);
-						
+					//---|Debug|--- - Key counter
+					//this.counter +=1;
+					//console.log(this.counter);
+					
+					//OLD Stuff
 					// Real buffer length, because key value might be some like "Enter" or "Backspace"
 					//const i = window.getComputedStyle(this.textNode);
 					//this.lineLength = (parseInt(i.getPropertyValue("font-size")) * (String(this.textNode.innerHTML).length));
 						
-					// Debug
+					//---|Debug|---
 					//console.log("Length in PX: " + this.lineLength);
 					//console.log((String(this.textNode.innerHTML)));
-					console.log("Cursor position: " + this.cursorPosition);
-					
-					break;
+					//---|Debug|---
+					//console.log("Cursor position: " + this.cursorPosition);
 				}// switch keycode
 			}
 
@@ -286,15 +316,52 @@ class MyConsole extends Object
 
 
 	//
+	// New Input Handler - Test --> Slower than the "old" Version. Array look up semms to be slower than switch/case statement.
+	//
+	handleInput2(e)
+	{
+		e.preventDefault();
+
+		switch(e.type)
+		{
+			case 'keydown':
+			case 'keypressed':
+			{
+				e.stopPropagation();
+				
+				//---|Debug|---
+				console.log(e);
+				//console.log("Länge: " + e.key.length);
+				console.log("keyCode: " + e.keyCode);
+				//console.log("KeyCode Typ: " + typeof(e.keyCode));
+
+				this.handlerArray[e.keyCode](e, this.textNode);
+			}
+
+			default: // No key pressed...
+			{ break; }
+		}
+	}// end handle input
+
+
+
+	//
 	// Handle normal chars without special meaning.
 	// 
 	_handleChars(_e, _textNode)
 	{
-		//_textNode.innerHTML += _e.key;				
-					
-		console.log(String.fromCharCode(_e.keyCode));
-		let t = this.updateBuffer(_e.key, this.cursorPosition);
-		console.log("Updated buffer: " + t);
+		switch(_e.key.length)
+		{
+			case 1: // no special keys, every printable keys length equals to 1 is accepted (stupid, but working)
+			{
+				console.log(String.fromCharCode(_e.keyCode));
+				let t = this.updateBuffer(_e.key, this.cursorPosition);
+				console.log("Updated buffer: " + t);
+				break;
+			}
+			default:
+			{	return; } //leave handler function
+		}
 	}
 
 
@@ -335,7 +402,7 @@ class MyConsole extends Object
 	
 
 	//
-	// TODO: Handles Backspace to delete the previous entered char. TODO: Anpassen auf neue Version!!!!
+	// Handles Backspace to delete the previous entered char.
 	//
 	_handleBackspace(_e, _textNode)
 	{
@@ -362,37 +429,41 @@ class MyConsole extends Object
 
 	//
 	// Move cursor, history etc...not finished
+	// 
+	// Seperated the arrow key function, this saves us a switch/case statement. The functions now directly called in the input handler function.
 	//
-	_handleArrowKeys(_e, _textNode)
+	_handleLeftArrowKey(_e, _textNode)
 	{	
-		switch(_e.keyCode)
+		// Handle left arrow key, should move the cursor to the left
+		if(this.cursorPosition > 0)
 		{
-			case 37: // Left arrow key
-			{
-				// Handle left arrow key, should move the cursor to the left
-				if(_textNode.innerHTML != null && this.cursorPosition > 0)
-				{
-					console.log("Cursor position: " + this.cursorPosition);
-					this.cursorPosition -= 1;
-					this.updateReqFlag = true;
-				}
-				break;
-			}
+			console.log("Cursor position: " + this.cursorPosition);
+			this.cursorPosition -= 1;
+			this.updateReqFlag = true;
+		}
+	}
 
-			case 39: // Right arrow key
-			{
-				// Handle right arrow key, should move the cursor to the right
-				if(_textNode.innerHTML != null && this.cursorPosition < this.consoleBuffer.length)
-				{
-					console.log("Cursor position: " + this.cursorPosition);
-					this.cursorPosition += 1;
-					this.updateReqFlag = true;
-				}
-				break;
-			}
+
+	//
+	// Move cursor to the right
+	//
+	_handleRightArrowKey(_e, _textNode)
+	{
+		// Handle right arrow key, should move the cursor to the right
+		if(this.cursorPosition < this.consoleBuffer.length)
+		{
+			console.log("Cursor position: " + this.cursorPosition);
+			this.cursorPosition += 1;
+			this.updateReqFlag = true;
 		} 
 	}
-			
+
+
+	//
+	// Dummy function does nothing
+ 	//
+	 _handleArrowKeysDummy(_e, _textNode)
+	 {	return; }
 	
 	
 }// end class
