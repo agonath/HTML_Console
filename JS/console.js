@@ -256,6 +256,18 @@ class MyConsole extends Object
 						break;
 					}
 
+					case 36: // Pos1 key
+					{
+						this._handlePos1Key(e, this.textNode);
+						break;
+					}
+
+					case 35: // End key
+					{
+						this._handleEndKey(e, this.textNode);
+						break;
+					}
+
 					case 37: // Arrow Left
 					{
 						this._handleLeftArrowKey(e, this.textNode);
@@ -288,6 +300,7 @@ class MyConsole extends Object
 				
 					default:
 					{
+						//console.log("Event: " + e.keyCode);
 						this._handleChars(e, this.textNode);
 						break;
 					}	
@@ -316,7 +329,9 @@ class MyConsole extends Object
 
 
 	//
-	// New Input Handler - Test --> Slower than the "old" Version. Array look up semms to be slower than switch/case statement.
+	// New Input Handler - Test --> Slower than the "old" Version. Array look up seems to be slower than switch/case statement.
+	// 
+	// Not used.
 	//
 	handleInput2(e)
 	{
@@ -371,7 +386,7 @@ class MyConsole extends Object
 	_clearConsoleLineBuffer()
 	{
 		this.curNode.innerHTML = "";
-		this.consoleBuffer = String("");
+		this.consoleBuffer = "";
 		this.cursorPosition = 0;
 		// direct update the prevent ghost images
 		this.updateCursorLine(this.textNode, this.consoleBuffer, this.cursorPosition);
@@ -380,7 +395,7 @@ class MyConsole extends Object
 	
 
 	//
-	// Handle the "Enter" key.
+	// Handle the "Enter" key. (Future: call worker thread with input results)
 	//
 	_handleEnter(_e, _textNode)
 	{
@@ -464,6 +479,27 @@ class MyConsole extends Object
  	//
 	 _handleArrowKeysDummy(_e, _textNode)
 	 {	return; }
+
+
+	 //
+	 // Pos1 key, set cursor to the begin of the line.
+	 //
+	 _handlePos1Key(_e, _textNode)
+	 {
+		 this.cursorPosition = 0;
+		 this.updateReqFlag = true;
+	 }
+
+
+
+	 //
+	 // End key, set cursor to the end of line.
+	 //
+	 _handleEndKey(_e, _textNode)
+	 {
+		 this.cursorPosition = this.consoleBuffer.length;
+		 this.updateReqFlag = true;
+	 }
 	
 	
 }// end class
