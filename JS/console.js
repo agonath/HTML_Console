@@ -1,8 +1,8 @@
 "use strict";
 
 const VERSION_MAJOR = '0';
-const VERSION_MINOR = '0';
-const VERSION_MICRO = '2';
+const VERSION_MINOR = '1';
+const VERSION_MICRO = '0';
 const VERSION = String(VERSION_MAJOR + "." + VERSION_MINOR + "." + VERSION_MICRO);
 
 const CURSOR_START = "<span class=\"cursor\">";
@@ -17,9 +17,11 @@ class MyConsole extends Object
 	{
 		super();
 
-		this.counter = 0; // number of keys pressed
+		//this.counter = 0; // number of keys pressed
+		//this.lineLength = 0; // current length of line in pixel
+		this.lineCounter = 0; // current number of lines
 		this.cursorPosition = 0; // line position of the cursor
-		this.lineLength = 0; // current length of line in pixel
+		
 		this.textNode = document.getElementById("text");
 		this.cursorNode = document.getElementById("cursor");
 		this.consoleBuffer = ""; // content of the input line
@@ -223,6 +225,30 @@ class MyConsole extends Object
 		return this.consoleBuffer;
 	}
 
+
+	//
+	// Print line to console, updates the line counter
+	//
+	// Parameter:	_text -> Text to be printed. (HTML possible, but can lead to unexpected results. (not tested))
+	//				
+	//
+	printLine(_text)
+	{
+		// Set up new line content
+		let line = document.createElement("DIV");
+		line.innerHTML = _text;
+
+		//update line counter
+		this.lineCounter += 1;
+
+		//set up line id as reference
+		line.id = this.lineCounter;
+
+		// Insert new line before the input line.
+		document.getElementById("console").insertBefore(line, this.textNode);
+	}
+
+
 	
 	//
 	// Input Handler
@@ -399,20 +425,27 @@ class MyConsole extends Object
 	//
 	_handleEnter(_e, _textNode)
 	{
-		let beforeCur = _textNode.innerHTML.slice(0, this.cursorPosition);
-		console.log("Zeile vor Enter: " + beforeCur);
-		
+		switch(this.consoleBuffer.length)
+		{
+			case 0:
+				{	return; }
+			
+			default:
+				{
+					let beforeCur = _textNode.innerHTML.slice(0, this.cursorPosition);
+					console.log("Zeile vor Enter: " + beforeCur);
 
-		// Set up new line content
-		let line = document.createElement("DIV");
-		line.innerHTML = beforeCur;
-		// Insert new line before the input line.
-		document.getElementById("console").insertBefore(line, _textNode);
+					// Print the line to console and update the line counter accordingly.
+					this.printLine(beforeCur);
 	
-		//Clear the input line buffer
-		this._clearConsoleLineBuffer();
+					//Clear the input line buffer
+					this._clearConsoleLineBuffer();
 
-		console.log(String.fromCharCode(_e.keyCode));
+					console.log(String.fromCharCode(_e.keyCode));
+					
+					return beforeCur; // return the input, text only
+				}
+		}		
 	}
 	
 
