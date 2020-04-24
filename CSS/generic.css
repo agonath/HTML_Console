@@ -80,6 +80,11 @@ body{
 	animation-iteration-count: infinite;
 }
 
+.selected-text{
+	color:#FFFFFF;
+	background-color: darkcyan;
+}
+
 /* OLD VERSION
 .cursor{
 	position:relative !important;
