@@ -11,6 +11,12 @@ const CURSOR_END = "</span>";
 const FPS = 1000/30; // frames per second, update rate
 
 
+// Enum for possible messages. (not yet used)
+const MESSAGES = { UPDATE:0, CLS:1 };
+Object.freeze(MESSAGES);
+
+
+
 class MyConsole extends Object
 {
 	constructor(_element = window)
@@ -24,6 +30,8 @@ class MyConsole extends Object
 		
 		this.textNode = document.getElementById("text");
 		this.cursorNode = document.getElementById("cursor");
+		this.console = document.getElementById("console");
+
 		this.consoleBuffer = ""; // content of the input line
 		this.setIntervalId = 0;
 		this.lastTimeStamp = performance.now();
@@ -113,7 +121,7 @@ class MyConsole extends Object
 		let t = timeStamp - this.lastTimeStamp;
 
 		// only update if needed
-		if(t > FPS && this.updateReqFlag === true)
+		if(t > FPS && this.updateReqFlag === true) // Game loop :-)
 		{
 			// ---|DEBUG|---
 			//console.log("Eventloop1...");
@@ -314,7 +322,7 @@ class MyConsole extends Object
 							const normalText = _buffer.slice(0, this.selectionStartPos);
 
 							//Now get the selected text, the last char is also covered by the cursor. So skip this one, else it would appear twice on screen.
-							const selectedText = _buffer.slice(this.selectionStartPos, this.cursorPosition-1);
+							const selectedText = _buffer.slice(this.selectionStartPos, this.cursorPosition);
 
 							// Get the char covered by the cursor. Overlapping with the first selected char here.
 							const coveredChar = _buffer.slice(this.cursorPosition, this.cursorPosition+1);
@@ -466,7 +474,8 @@ class MyConsole extends Object
 		line.id = this.lineCounter;
 
 		// Insert new line before the input line.
-		document.getElementById("console").insertBefore(line, this.textNode);
+		this.console.insertBefore(line, this.textNode);
+		//document.getElementById("console").insertBefore(line, this.textNode);
 	}
 
 
@@ -483,14 +492,21 @@ class MyConsole extends Object
 
 		switch(e.type)
 		{
-			case 'message': // TODO: Plugins via worker threads need to update the console buffer this way.
+			case 'message':
 			{
-				switch(e.data) // TODO: Check source of message first!
+				switch(e.data) // TODO: Check source of message first for the sake of security!
 				{
-					case "update":
+					case MESSAGES.UPDATE: // TODO: Plugins via worker threads need to update the console buffer this way.
 					{
 						//console.log("Meldung erhalten: " + e.data);
-						this.updateCursorLine(this.textNode, this.consoleBuffer, this.cursorPosition);
+						//this.updateCursorLine(this.textNode, this.consoleBuffer, this.cursorPosition);
+						this.updateReqFlag = true; // better, faster and none blocking
+						break;
+					}
+
+					case MESSAGES.CLS:
+					{
+						this._clearConsoleLineBuffer;
 						break;
 					}
 				}
@@ -696,7 +712,7 @@ class MyConsole extends Object
 		// cancel an active selection of text
 		this.selectionActive = false;
 
-		// direct update the prevent ghost images
+		// force direct update the prevent ghost images
 		this.updateCursorLine(this.textNode, this.consoleBuffer, this.cursorPosition);
 	}
 
