@@ -2,6 +2,11 @@
 	margin:0px;
 	padding:0px;
 	box-sizing:border-box;
+
+	--textColor:#000000;
+	--textBackgroundColor:#FFFFFF;
+	--selectedTextColor:#FFFFFF;
+	--selectedTextBackgroundColor:darkcyan;
 }
 		
 body{
@@ -81,8 +86,8 @@ body{
 }
 
 .selected-text{
-	color:#FFFFFF;
-	background-color: darkcyan;
+	color: var(--selectedTextColor);
+	background-color: var(--selectedTextBackgroundColor);
 }
 
 /* OLD VERSION
@@ -118,15 +123,15 @@ body{
 	from{
 		/*opacity:0.0;*/
 		/*color: #FFFFFF;*/
-		background-color: #FFFFFF;
-		color: #000000;
+		background-color: var(--textBackgroundColor);
+		color: var(--textColor);
 	}
 
 	to{
 		/*opacity: 1.0;
 		color: #000000;*/
-		background-color: #000000;
-		color: #FFFFFF;
+		background-color: var(--textColor);
+		color: var(--textBackgroundColor);
 	}
 }
 		
