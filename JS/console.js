@@ -12,7 +12,7 @@ const FPS = 1000/30; // frames per second, update rate
 
 
 // Enum for possible messages. (not yet used)
-const MESSAGES = { UPDATE:0, CLS:1 };
+const MESSAGES = { NONE:0, UPDATE:1, CLS:2 };
 Object.freeze(MESSAGES);
 
 
@@ -128,7 +128,7 @@ class MyConsole extends Object
 			//console.log("TextNode: " + this.textNode);
 			//console.log("Console Buffer: " + this.consoleBuffer);
 			//console.log("Cursor Position: " + this.cursorPosition);
-			this.updateCursorLine(this.textNode, this.consoleBuffer, this.cursorPosition);
+			this.updateCursorLine2(this.textNode, this.consoleBuffer, this.cursorPosition);
 		}
 
 		this.lastTimeStamp = timeStamp;		
@@ -222,6 +222,125 @@ class MyConsole extends Object
 		const offsetEnd = lenBuf - _cursorPosition;
 		//console.log("Offset: " + offsetEnd);
 
+		//
+		// New version tests needed....
+		switch(this.selectionActive)
+		{
+			// Highlight the text
+			case true:
+			{
+				//-----------------------------
+				// Collect the text elements
+				//-----------------------------
+
+				// The cursor is somewhere at the line. (see first switch condition) Every selection is made by using the left arrow key.
+				if(this.cursorPosition < this.selectionStartPos)
+				{
+					// The selected text is always behind the cursor position. (right side of the cursor)
+				
+					//First get the normal text in front of the cursor.
+					const normalText = _buffer.slice(0, this.cursorPosition);
+
+					// Get the char covered by the cursor. Overlapping with the first selected char here.
+					const coveredChar = _buffer.slice(this.cursorPosition, this.cursorPosition+1);
+
+					//Now get the selected text, the first char is also covered by the cursor. So skip this one, else it would appear twice on screen.
+					//+1 to the end, because end of slicing is excluding the end value.
+					// If the selection begins somewhere at the line, then "cursor position = start position of selection".
+					const selectedText = _buffer.slice(this.cursorPosition+1, this.selectionStartPos+1); 
+
+					//Now get the text after the current selection.
+					const afterCurAndSelection = _buffer.slice(this.selectionStartPos+1, lenBuf); // TODO: seems to start one char to soon
+						
+						
+					//-----------------------------
+					// Now build the input line
+					//-----------------------------
+
+					// First the text in front of the cursor.
+					this.textNode.innerHTML = normalText;
+					// Second the cursor node
+					this.textNode.appendChild(this.curNode);
+					// Set up the content covered by the cursor
+					this.curNode.innerHTML = coveredChar;
+					// Add the selection node after the cursor node.
+					this.textNode.appendChild(this.selectionNode);
+					// Set up the content of the selection node.
+					this.selectionNode.innerHTML = selectedText;
+					// Now add the rest of the normal text to the end.
+					this.selectionNode.insertAdjacentHTML('afterend', afterCurAndSelection);
+				}
+				else
+				{
+					// The selected text is always in front of the cursor position. (left side of the cursor)
+					//First get the normal text in front of the selected text.
+					const normalText = _buffer.slice(0, this.selectionStartPos);
+
+					//Now get the selected text, the last char is also covered by the cursor. So skip this one, else it would appear twice on screen.
+					const selectedText = _buffer.slice(this.selectionStartPos, this.cursorPosition);
+
+					// Get the char covered by the cursor. Overlapping with the first selected char here.
+					const coveredChar = _buffer.slice(this.cursorPosition, this.cursorPosition+1);
+
+					//Now get the text after the cursor.
+					const afterCurAndSelection = _buffer.slice(this.cursorPosition+1, lenBuf);
+						
+						
+					//-----------------------------
+					// Now build the input line
+					//-----------------------------
+
+					// First the text in front of the cursor.
+					this.textNode.innerHTML = normalText;
+					// Second add the selection node after the normal text.
+					this.textNode.appendChild(this.selectionNode);
+					// Set up the content of the selection node.
+					this.selectionNode.innerHTML = selectedText;
+					// Now the cursor node
+					this.textNode.appendChild(this.curNode);
+					// Set up the content covered by the cursor
+					this.curNode.innerHTML = coveredChar;
+					// Now add the rest of the normal text to the end.
+					this.curNode.insertAdjacentHTML('afterend', afterCurAndSelection);
+				}
+				break;
+			}
+			
+			default:
+			{
+				// No text selection...
+				//
+				//-----------------------------
+				// Collect the text elements
+				//-----------------------------
+
+				const beforeCur = _buffer.slice(0, _cursorPosition);
+				const coveredChar = _buffer.slice(_cursorPosition, _cursorPosition+1);
+				const afterCur = _buffer.slice(_cursorPosition+1, lenBuf);
+
+				//---|DEBUG|---
+				console.log("Vor Cursor: " + beforeCur);
+				console.log("Nach Cursor: " + afterCur);
+						
+						
+				//-----------------------------
+				// Now build the input line
+				//-----------------------------
+					
+				this.textNode.innerHTML = beforeCur;
+				this.textNode.appendChild(this.curNode);
+				
+				if(offsetEnd === 0)
+				{	this.curNode.innerHTML = "&nbsp"; } // Cursor is at the end, insert a space to make the cursor visible.
+				else
+				{	this.curNode.innerHTML = coveredChar; }
+				
+				this.curNode.insertAdjacentHTML('afterend', afterCur);
+				break;
+			}
+		}
+
+		/*
 		switch(offsetEnd)
 		{
 			case 0: //Cursor is at the end
@@ -238,6 +357,9 @@ class MyConsole extends Object
 						// And the cursor is always at the end. (see first switch condition)
 						let text = _buffer.slice(0, this.selectionStartPos); //the normal, not selected text
 						let selection = _buffer.slice(this.selectionStartPos, this.cursorPosition); // the selected text
+
+						// Debug
+						console.log("Inhalt des Buffers: " + _buffer);
 
 						//Update the content of the input line
 						// first the normal text
@@ -352,7 +474,7 @@ class MyConsole extends Object
 						break;
 					}
 
-					default: // standard behaviour
+					default: // standard behaviour, no selection
 					{
 						//-----------------------------
 						// Collect the text elements
@@ -382,6 +504,7 @@ class MyConsole extends Object
 			}
 
 		}//switch(offsetEnd)
+		*/
 
 		this.updateReqFlag = false;
 		return this.textNode.innerHTML;
@@ -581,11 +704,12 @@ class MyConsole extends Object
 						break;
 					}
 
-					case 37: // Arrow Left + check fpr shift key
+					case 37: // Arrow Left + check for shift key
 					{
 						this.shiftKeyPressed = e.shiftKey;
 						console.log("Shiftkey: " + this.shiftKeyPressed);
-						this._handleLeftArrowKey(e, this.textNode);
+						//this._handleLeftArrowKey(e, this.textNode);
+						this._handleLeftArrowKey2(e, this.textNode);
 						break;
 					}
 
@@ -595,11 +719,12 @@ class MyConsole extends Object
 						break;
 					}
 					
-					case 39: // Arrow Right + check fpr shift key
+					case 39: // Arrow Right + check for shift key
 					{
 						this.shiftKeyPressed = e.shiftKey;
 						console.log("Shiftkey: " + this.shiftKeyPressed);
-						this._handleRightArrowKey(e, this.textNode);
+						//this._handleRightArrowKey(e, this.textNode);
+						this._handleRightArrowKey2(e, this.textNode);
 						break;
 					}
 
@@ -806,7 +931,7 @@ class MyConsole extends Object
 		// Handle left arrow key, should move the cursor to the left
 		if(this.cursorPosition > 0)
 		{
-			console.log("Cursor position: " + this.cursorPosition);
+			console.log("Am Anfang --> Cursor position: " + this.cursorPosition);
 
 			switch(this.shiftKeyPressed)
 			{
@@ -844,7 +969,7 @@ class MyConsole extends Object
 			this.cursorPosition -= 1;
 			this.updateReqFlag = true;
 			//window.postMessage("update");
-		}
+		}//if
 	}
 
 
@@ -868,7 +993,7 @@ class MyConsole extends Object
 		// Handle right arrow key, should move the cursor to the right
 		if(this.cursorPosition < this.consoleBuffer.length)
 		{
-			console.log("Cursor position: " + this.cursorPosition);
+			console.log("Am Anfang --> Cursor position: " + this.cursorPosition);
 
 			switch(this.shiftKeyPressed)
 			{
