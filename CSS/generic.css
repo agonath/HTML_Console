@@ -2,7 +2,9 @@
 	margin:0px;
 	padding:0px;
 	box-sizing:border-box;
+}
 
+:root{
 	--textColor:#000000;
 	--textBackgroundColor:#FFFFFF;
 	--selectedTextColor:#FFFFFF;
