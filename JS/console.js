@@ -443,11 +443,12 @@ class MyConsole extends Object
 	// Parameter:	_text -> Text to be printed. (HTML possible, but can lead to unexpected results. (not tested))
 	//				
 	//
-	printLine(_text)
+	printLine(_text, _cssClassName="")
 	{
 		// Set up new line content
 		let line = document.createElement("DIV");
 		line.innerHTML = _text;
+		line.setAttribute("class", _cssClassName);
 
 		//update line counter
 		this.lineCounter += 1;
@@ -679,7 +680,7 @@ class MyConsole extends Object
 					//console.log("Zeile vor Enter: " + beforeCur);
 
 					// Print the line to console and update the line counter accordingly.
-					this.printLine(beforeCur);
+					this.printLine(beforeCur, "text");
 	
 					//Clear the input line buffer and cancle an active text selection
 					this._clearConsoleLineBuffer();
