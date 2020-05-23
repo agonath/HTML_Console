@@ -5,13 +5,14 @@
 }
 
 :root{
-	--textColor:#000000;
-	--textBackgroundColor:#FFFFFF;
+	--textColor:#face3e;
+	--textBackgroundColor:#555555;
 	--selectedTextColor:#FFFFFF;
 	--selectedTextBackgroundColor:darkcyan;
 }
 		
 body{
+	background-color: var(--textBackgroundColor);
 	position:absolute;
 	display:block;
 	top:0px;
@@ -62,6 +63,12 @@ body{
 	align-items: end;
 }
 
+#console {
+
+	color: var(--textColor);
+	background-color: var(--textBackgroundColor);
+}
+
 
 /*---------------*/
 /* Text stuff    */
@@ -72,7 +79,7 @@ body{
 
 .text{
 	white-space: pre;
-	font-family: "serif";
+	font-family: "courier";
 }
 
 

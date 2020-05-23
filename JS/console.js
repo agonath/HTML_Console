@@ -487,7 +487,7 @@ class MyConsole extends Object
 
 					case MESSAGES.CLS:
 					{
-						this._clearConsoleLineBuffer;
+						this._clearConsoleLineBuffer();
 						break;
 					}
 				}
@@ -550,6 +550,13 @@ class MyConsole extends Object
 						break;
 					}
 
+					case 16: // Shift key (left & right)
+					{
+						this.shiftKeyPressed = e.shiftKey;
+						console.log("Shiftkey: " + this.shiftKeyPressed);
+						break;
+					}
+
 					case 36: // Pos1 key
 					{
 						this._handlePos1Key(e, this.textNode);
@@ -564,7 +571,7 @@ class MyConsole extends Object
 
 					case 37: // Arrow Left + check for shift key
 					{
-						this.shiftKeyPressed = e.shiftKey;
+						//this.shiftKeyPressed = e.shiftKey;
 						//console.log("Shiftkey: " + this.shiftKeyPressed);
 						this._handleLeftArrowKey(e, this.textNode);
 						break;
@@ -578,7 +585,7 @@ class MyConsole extends Object
 					
 					case 39: // Arrow Right + check for shift key
 					{
-						this.shiftKeyPressed = e.shiftKey;
+						//this.shiftKeyPressed = e.shiftKey;
 						//console.log("Shiftkey: " + this.shiftKeyPressed);
 						this._handleRightArrowKey(e, this.textNode);
 						break;
@@ -737,7 +744,7 @@ class MyConsole extends Object
 			{
 				case true:
 				{
-					// Check if we need to set the selection flag
+					// Check if we need to set the selection flag to start an selection
 					switch(this.selectionActive)
 					{
 						case false:
@@ -805,7 +812,7 @@ class MyConsole extends Object
 			{
 				case true:
 				{
-					// Check if we need to set the selection flag
+					//Check if we need to set the selection flag to start an selection
 					switch(this.selectionActive)
 					{
 						case false:
@@ -869,8 +876,24 @@ class MyConsole extends Object
 	 //
 	 _handlePos1Key(_e, _textNode)
 	 {
-		 // cancel an active selection of text
-		 this.selectionActive = false;
+		 switch(this.shiftKeyPressed)
+		 {
+			case true:
+			{
+				// Update the selection start position, everything in front of the cursor is selected. 
+				this.selectionStartPos = this.cursorPosition;
+				this.selectionEndPos = 0;
+				this.selectionActive = true;
+				break;
+			}
+
+			default:
+			{
+				// cancel an active selection of text
+				this.selectionActive = false;
+				break;
+			}
+		 }
 		 
 		 this.cursorPosition = 0;
 		 this.updateReqFlag = true;
@@ -884,8 +907,24 @@ class MyConsole extends Object
 	 //
 	 _handleEndKey(_e, _textNode)
 	 {
-		 // cancel an active selection of text
-		 this.selectionActive = false;
+		 switch(this.shiftKeyPressed)
+		 {
+			case true:
+			{
+				// Update the selection start position, everything behind the cursor is selected.
+				this.selectionStartPos = this.cursorPosition;
+				this.selectionEndPos = this.consoleBuffer.length;
+				this.selectionActive = true;
+				break;
+			}
+
+			default:
+			{
+				// cancel an active selection of text
+				this.selectionActive = false;
+				break;
+			}
+		 }
 		 
 		 this.cursorPosition = this.consoleBuffer.length;
 		 this.updateReqFlag = true;
