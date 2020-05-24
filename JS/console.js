@@ -10,6 +10,9 @@ const CURSOR_END = "</span>";
 
 const FPS = 1000/30; // frames per second, update rate
 
+const LOCAL = "http://127.0.0.1:8080";
+const LOCAL_SSL = "https://127.0.0.1.443";
+
 
 // Enum for possible messages. (not yet used)
 const MESSAGES = { NONE:0, UPDATE:1, CLS:2 };
@@ -40,7 +43,7 @@ class MyConsole extends Object
 		this.selectionStartPos = -1; // where the selection via shift + arrow key starts (cursor position)
 		this.selectionEndPos = -1;   // where the selection via shift + arrow key ends (cursor position)
 		this.selectionActive = false; // Indicates if there is currently a selected text active.
-		//this.selectedPositions = ""; // contains the selected text
+		this.currentSelection = ""; // contains the selected text
 
 		// Node for selected chars, created once only.
 		this.selectionNode = document.createElement("span");
@@ -474,25 +477,36 @@ class MyConsole extends Object
 
 		switch(e.type)
 		{
-			case 'message':
+			case 'message': // Tests needed....
 			{
-				switch(e.data) // TODO: Check source of message first for the sake of security!
+				switch(e.origin)
 				{
-					case MESSAGES.UPDATE: // TODO: Plugins via worker threads need to update the console buffer this way.
+					case LOCAL:
+					case LOCAL_SSL:
 					{
-						//console.log("Meldung erhalten: " + e.data);
-						//this.updateCursorLine(this.textNode, this.consoleBuffer, this.cursorPosition);
-						this.updateReqFlag = true; // better, faster and none blocking
+						switch(e.data)
+						{
+							case MESSAGES.UPDATE: // TODO: Plugins via worker threads need to update the console buffer this way.
+							{
+								//console.log("Meldung erhalten: " + e.data);
+								//this.updateCursorLine(this.textNode, this.consoleBuffer, this.cursorPosition);
+								this.updateReqFlag = true; // better, faster and none blocking
+								break;
+							}
+
+							case MESSAGES.CLS:
+							{
+								this._clearConsoleLineBuffer();
+								break;
+							}
+						}
 						break;
 					}
 
-					case MESSAGES.CLS:
-					{
-						this._clearConsoleLineBuffer();
-						break;
-					}
-				}
-				break;
+					default:
+					{	break; }
+
+				}// switch e.origin
 			}
 
 			case 'keyup':
@@ -510,6 +524,14 @@ class MyConsole extends Object
 							{
 								//there is an active selection, save the end position wich equals to the current cursor position
 								this.selectionEndPos = this.cursorPosition;
+								
+								// save the selected text
+								if(this.selectionStartPos > this.selectionEndPos)
+								{	this.currentSelection = this.consoleBuffer.slice(this.selectionEndPos, this.selectionStartPos + 1); } // +1 to get the end of text, selection is behind the cursor
+								else
+								{	this.currentSelection = this.consoleBuffer.slice(this.selectionStartPos, this.selectionEndPos); } // +1 not necessary because selection is in front of cursor
+
+								//console.log("Selektierter Text: " + this.currentSelection);
 								break;
 							}
 
@@ -601,6 +623,59 @@ class MyConsole extends Object
 					case 46: // Delete key
 					{
 						this._handleDeleteKey(e, this.textNode);
+						break;
+					}
+
+					case 67: // 'c' key
+					{
+						switch(e.ctrlKey)
+						{
+							case true:
+							{
+								// stupid method for copy to clipboard.....but doesn't work because of browser limitations/restrictions :-(
+								let frag = document.createDocumentFragment();
+								let node = document.createElement("input");
+								frag.appendChild(node);
+
+								node.setAttribute("type", "text");
+								node.textContent = this.currentSelection;
+								node.style.display = "none";
+								node.select();
+								document.body.appendChild(node);
+								console.log("Rückgabewert: " + document.execCommand("copy"));
+								document.body.removeChild(node);
+								break;
+							}
+
+							default:
+							{
+								this._handleChars(e, this.textNode); // ctrl not pressed, handle as char
+								break;
+							}
+						}
+						break;
+					}
+
+					// TODO: Doesn't work because of browser restrictions......
+					case 86: // 'v' key
+					{
+						switch(e.ctrlKey)
+						{
+							case true:
+							{
+								// Copy last selected text to clipboard
+							//	document.execCommand("paste", false, this.currentSelection);
+								var clipboardText = document.execCommand("paste");
+								console.log("Text im Clipboard: " + clipboardText);
+								break;
+							}
+
+							default:
+							{
+								this._handleChars(e, this.textNode); // ctrl not pressed, handle as char
+								break;
+							}
+						}
 						break;
 					}
 				
