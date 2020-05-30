@@ -7,11 +7,12 @@ const VERSION = String(VERSION_MAJOR + "." + VERSION_MINOR + "." + VERSION_MICRO
 
 const CURSOR_START = "<span class=\"cursor\">";
 const CURSOR_END = "</span>";
+const CURSOR_END_CHAR = "█";//"&nbsp";
 
 const FPS = 1000/30; // frames per second, update rate
 
 const LOCAL = "http://127.0.0.1:8080";
-const LOCAL_SSL = "https://127.0.0.1.443";
+const LOCAL_SSL = "https://127.0.0.1:443";
 
 
 // Enum for possible messages. (not yet used)
@@ -56,12 +57,11 @@ class MyConsole extends Object
 		this.curNode.setAttribute("id", "cursor");
 
 
-		// Working variables used in the "updateCursorLine" function. Just allocated once to reduce the GC an memory usage.
-		let _normalText = "";
-		let _coveredChar = "";
-		let _selectedText = "";
-		let _afterCurAndSelection = "";
-		
+		// Working variables used in the "updateCursorLine" function. Just allocated once to reduce the GC and memory usage.
+		this._normalText = "";
+		this._coveredChar = "";
+		this._selectedText = "";
+		this._afterCurAndSelection = "";		
 	}
 
 
@@ -121,7 +121,7 @@ class MyConsole extends Object
 	// Parameter:
 	//				_textNode		-> The Node to insert the text (object)
 	//				_buffer			-> The console buffer as string. (String)
-	//				_cursorPosition	-> The current position of the cursor. (current row, Int)
+	//				_cursorPosition	-> The current position of the cursor. (current column, Int)
 	//
 	updateCursorLine(_textNode, _buffer, _cursorPosition)
 	{
@@ -138,7 +138,7 @@ class MyConsole extends Object
 					//this.textNode.innerHTML = _buffer + CURSOR_START + CURSOR_END;
 					this.textNode.innerHTML = _buffer;
 					this.textNode.appendChild(this.curNode);
-					this.curNode.innerHTML = "&nbsp"; // --> Space else Cursor would not be visible at the end of line
+					this.curNode.innerHTML = CURSOR_END_CHAR; // --> Space else Cursor would not be visible at the end of line
 					break;
 				}
 			default:
@@ -170,7 +170,7 @@ class MyConsole extends Object
 	// Parameter:
 	//				_textNode		-> The Node to insert the text (object)
 	//				_buffer			-> The console buffer as string. (String)
-	//				_cursorPosition	-> The current position of the cursor. (current row, Int)
+	//				_cursorPosition	-> The current position of the cursor. (current column, Int)
 	//
 	// New version, with text selection via keys.
 	//
@@ -259,7 +259,7 @@ class MyConsole extends Object
 					// Get the char covered by the cursor. Overlapping with the first selected char here.
 					//let coveredChar="";
 					if(offsetEnd === 0)
-					{	this._coveredChar = "&nbsp"; } // Cursor is at the end, insert a space to make it visible.
+					{	this._coveredChar = CURSOR_END_CHAR; } // Cursor is at the end, insert a space to make it visible.
 					else
 					{	this._coveredChar = _buffer.slice(this.cursorPosition, this.cursorPosition+1); }
 
@@ -299,7 +299,7 @@ class MyConsole extends Object
 					// Get the char covered by the cursor. Overlapping with the first selected char here.
 					//let coveredChar="";
 					if(offsetEnd === 0)
-					{	this._coveredChar = "&nbsp"; } // the cursor is at the end, insert a space the make it visible.
+					{	this._coveredChar = CURSOR_END_CHAR; } // the cursor is at the end, insert a space the make it visible.
 					else
 					{	this._coveredChar = _buffer.slice(this.cursorPosition, this.cursorPosition+1); }
 
@@ -343,7 +343,7 @@ class MyConsole extends Object
 				// Content covered by the cursor
 				//let coveredChar="";
 				if(offsetEnd === 0 ) // Check if the cursor is at the end of line. This saves us a string slice function call.
-				{	this._coveredChar = "&nbsp"; } // Cursor is at the end, insert a space to make it visible.
+				{	this._coveredChar = CURSOR_END_CHAR; } // Cursor is at the end, insert a space to make it visible.
 				else
 				{	this._coveredChar = _buffer.slice(_cursorPosition, _cursorPosition+1); }
 
