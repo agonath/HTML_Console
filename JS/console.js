@@ -7,7 +7,7 @@ const VERSION = String(VERSION_MAJOR + "." + VERSION_MINOR + "." + VERSION_MICRO
 
 const CURSOR_START = "<span class=\"cursor\">";
 const CURSOR_END = "</span>";
-const CURSOR_END_CHAR = "█";//"&nbsp";
+const CURSOR_END_CHAR = "&nbsp";
 
 const FPS = 1000/30; // frames per second, update rate
 
