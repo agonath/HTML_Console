@@ -1,5 +1,7 @@
 "use strict";
 
+//import * as Loader from  './loader.js';
+
 const VERSION_MAJOR = '0';
 const VERSION_MINOR = '2';
 const VERSION_MICRO = '0';
@@ -57,6 +59,11 @@ class MyConsole extends Object
 		this.curNode.setAttribute("id", "cursor");
 
 
+		// Create the worker thread for the commands
+		//let cmdWorker = 0;
+		this.loader = '';
+
+
 		// Working variables used in the "updateCursorLine" function. Just allocated once to reduce the GC and memory usage.
 		this._normalText = "";
 		this._coveredChar = "";
@@ -88,6 +95,15 @@ class MyConsole extends Object
 			this._clearConsoleLineBuffer();
 
 			console.log("Console Version: " + VERSION);
+
+			// Worker thread test -- TODO
+			//this.cmdWorker = new Worker("loader.js");
+			//this.cmdWorker.postMessage();
+			//console.log("Worker thread: " + this.cmdWorker);
+			this.loader = new Loader((LOCAL, LOCAL_SSL))
+			this.loader.init();
+			console.log("Loader: " + this.loader);
+
 		}
 	}
 
@@ -497,6 +513,12 @@ class MyConsole extends Object
 							case MESSAGES.CLS:
 							{
 								this._clearConsoleLineBuffer();
+								break;
+							}
+
+							case Loader.LOADER_MESSAGES.LOADER_RESULT:
+							{
+								this.printLine(e.data);
 								break;
 							}
 						}
