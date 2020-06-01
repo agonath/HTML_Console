@@ -16,12 +16,15 @@ Object.freeze(LOADER_MESSAGES);
 
 class Loader extends Object
 {
-    constructor(_serverAddr=("127.0.0.1:80"))
+    constructor(_serverAddr=["127.0.0.1:80"])
     {
         super();
         
         this.result="";
         this.allowedServers = _serverAddr;
+
+        for(var x in this.allowedServers)
+        {   console.log(this.allowedServers[x]); }
     }
 
 
@@ -39,11 +42,17 @@ class Loader extends Object
     // TODO
     // Execute a command
     //
-    async executeCmd(_data)
+    async executeCmd(_server, _data)
     {
-        let cmdProm = await fetch(SERVER_ADDR, _data);
-        this.result = await Response.text();
-        this.sendResultToConsole(this.result);
+        let payload = {
+                        method: 'POST',
+                        headers: {'Content-Type':'application/json;charset=utf-8'},
+                        body:_data
+                      }
+
+        let cmdProm = await fetch(_server, payload); // TODO: Error handling....
+        this.result = await Response.text(); // TODO
+        this.sendResultToConsole(this.result); // TODO
         return;
     }
 
@@ -51,10 +60,10 @@ class Loader extends Object
     // TODO
     // Send results from server to console.
     //
-    sendResultToConsole(_data)
+    sendResultToConsole(_server, _data)
     {
         let msg = {"type":LOADER_MESSAGES.LOADER_RESULT, "data":_data};
-        window.postMessage(msg, SERVER_ADDR);
+        window.postMessage(msg, _server);
         return;
     }
 
@@ -65,20 +74,27 @@ class Loader extends Object
         {
             case 'message': //handle messages only
             {
-                switch(_event.origin)
+                let allowedOrigin = false;
+                for(var x in this.allowedServers)
                 {
-                    case (_event.origin in this.allowedServers):
+                    if(_event.origin.toLowerCase() === this.allowedServers[x])
+                    {   allowedOrigin = true; }
+                }
+        
+                // DEBUG
+                console.log("Origin in allowed servers: " + allowedOrigin + " origin: " + _event.origin);
+
+                switch(allowedOrigin)
+                {
+                    case (true):
                     {
-                        switch(_event.data)
+                        switch(_event.data.msg)
                         {
                             case LOADER_MESSAGES.LOADER_EXECUTE:
                             {
-                                // TODO: implement this
-                                console.log("Message received: " + _event.data)
-                                if(_event.data.msg === LOADER_MESSAGES.LOADER_EXECUTE)
-                                {
-                                    this.executeCmd(_event.data.data);
-                                }
+                                console.log("Message received: " + _event.data.msg + " " + event.data.data);
+                                // Execute the input
+                                this.executeCmd(_event.origin, _event.data.data);
                                 break;
                             }
 
