@@ -6,8 +6,8 @@
 
 
 // Enum for possible messages.
-const LOADER_MESSAGES = { NONE:0, LOADER_EXECUTE:1, LOADER_RESULT:2 };
-Object.freeze(LOADER_MESSAGES);
+//const LOADER_MESSAGES = { NONE:0, LOADER_EXECUTE:1, LOADER_RESULT:2 };
+//Object.freeze(LOADER_MESSAGES);
 
 
 //
@@ -34,8 +34,7 @@ class Loader extends Object
     init()
     {
         const self = this; // needed to keep the reference of this to our console class object
-        console.log("Loader: " + this);
-        addEventListener("message", function(_e){ return self.handleEvent(_e);});
+        //addEventListener("message", function(_e){ return self.handleEvent(_e);});
     }
 
 
@@ -46,12 +45,14 @@ class Loader extends Object
     {
         let payload = {
                         method: 'POST',
+                        cache: 'no-cache',
                         headers: {'Content-Type':'application/json;charset=utf-8'},
                         body:_data
                       }
 
-        let cmdProm = await fetch(_server, payload); // TODO: Error handling....
-        this.result = await Response.text(); // TODO
+        let _result = await fetch(_server, payload); // TODO: Error handling....
+        this.result = await _result.text();
+        console.log("Result: " + this.result);
         this.sendResultToConsole(this.result); // TODO
         return;
     }
@@ -60,10 +61,13 @@ class Loader extends Object
     // TODO
     // Send results from server to console.
     //
-    sendResultToConsole(_server, _data)
+    sendResultToConsole(_data)
     {
-        let msg = {"type":LOADER_MESSAGES.LOADER_RESULT, "data":_data};
-        window.postMessage(msg, _server);
+        let msg = {type:MESSAGES.LOADER_RESULT, data:_data};
+        //let msg = String('{"type":' + LOADER_MESSAGES.LOADER_EXECUTE + ',"data":"' + beforeCur + '"}');
+        //let jsonMsg = JSON.parse(msg);
+        console.log("In sendResultTo Console mit Nachricht: " + msg);
+        window.postMessage(msg);
         return;
     }
 
@@ -72,7 +76,7 @@ class Loader extends Object
     {
         switch(_event.type)
         {
-            case 'message': //handle messages only
+            case 'message': //handle messages only -- 
             {
                 let allowedOrigin = false;
                 for(var x in this.allowedServers)
@@ -88,18 +92,18 @@ class Loader extends Object
                 {
                     case (true):
                     {
-                        switch(_event.data.msg)
+                        switch(_event.data.type)
                         {
-                            case LOADER_MESSAGES.LOADER_EXECUTE:
+                            case MESSAGES.LOADER_EXECUTE:
                             {
-                                console.log("Message received: " + _event.data.msg + " " + event.data.data);
+                                console.log("Message received: " + _event.data.type + " " + event.data.data);
                                 // Execute the input
                                 this.executeCmd(_event.origin, _event.data.data);
                                 break;
                             }
 
                             default:
-                            {   return; }
+                            { return; }
                         }
 
                     }

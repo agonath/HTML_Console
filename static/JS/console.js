@@ -20,7 +20,7 @@ const LOCALHOST_SSL = "https://localhost:443";
 
 
 // Enum for possible messages. (not yet used)
-const MESSAGES = { NONE:0, UPDATE:1, CLS:2 };
+const MESSAGES = { NONE:0, UPDATE:1, CLS:2, LOADER_EXECUTE:3, LOADER_RESULT:4};
 Object.freeze(MESSAGES);
 
 
@@ -86,8 +86,8 @@ class MyConsole extends Object
 			// Register input handler
 			const self = this; // needed to keep the reference of this to our console class object
 			_element.addEventListener("keydown", function(_e){ return self.handleInput(_e); } );
-			//_element.addEventListener("message", function(_e){ return self.handleInput(_e); } ); --> second fastest method
-			_element.addEventListener("keyup", function(_e){ return self.handleInput(_e); });
+			_element.addEventListener("message", function(_e){ return self.handleInput(_e); } );
+			_element.addEventListener("keyup", function(_e){ return self.handleInput(_e); } );
 
 			// Register update function
 			this.setIntervalId = setInterval(this.eventLoop.bind(this), FPS);
@@ -104,6 +104,8 @@ class MyConsole extends Object
 			//console.log("Worker thread: " + this.cmdWorker);
 			this.loader = new Loader([LOCAL_ADDR, LOCAL_ADDR_SSL, LOCALHOST, LOCALHOST_SSL]);
 			this.loader.init();
+
+			console.log(window);
 
 		}
 	}
@@ -487,7 +489,7 @@ class MyConsole extends Object
 	//
 	handleInput(e)
 	{
-		e.preventDefault();
+		//e.preventDefault();
 		
 		// ---|Debug|---
 		//console.log("Handele input -> origin: " + e.origin);
@@ -496,14 +498,17 @@ class MyConsole extends Object
 		{
 			case 'message': // Tests needed....
 			{
+				console.log("Nachricht: " + e.data.type);
 				switch(e.origin)
 				{
-					case LOCAL:
-					case LOCAL_SSL:
+					case LOCAL_ADDR:
+					case LOCAL_ADDR_SSL:
+					case LOCALHOST:
+					case LOCALHOST_SSL:
 					{
-						switch(e.data)
+						switch(e.data.type)
 						{
-							case MESSAGES.UPDATE: // TODO: Plugins via worker threads need to update the console buffer this way.
+							case MESSAGES.UPDATE: // TODO: Plugins via worker threads need to trigger the update this way.
 							{
 								//console.log("Meldung erhalten: " + e.data);
 								//this.updateCursorLine(this.textNode, this.consoleBuffer, this.cursorPosition);
@@ -517,9 +522,17 @@ class MyConsole extends Object
 								break;
 							}
 
-							case Loader.LOADER_MESSAGES.LOADER_RESULT:
+							case MESSAGES.LOADER_RESULT:
 							{
-								this.printLine(e.data); // TODO
+								this.printLine(e.data.data); // TODO
+								break;
+							}
+
+							case MESSAGES.LOADER_EXECUTE:
+                            {
+                                console.log("Message received: " + e.data.type + " " + e.data.data);
+                                // Execute the input
+                                this.loader.executeCmd(e.origin, e.data.data);
 								break;
 							}
 						}
@@ -780,11 +793,11 @@ class MyConsole extends Object
 					// Print the line to console and update the line counter accordingly.
 					this.printLine(beforeCur, "text");
 
-					let msg = String('{"msg":' + LOADER_MESSAGES.LOADER_EXECUTE + ',"data":"' + beforeCur + '"}');
+					let msg = String('{"type":' + MESSAGES.LOADER_EXECUTE + ',"data":"' + beforeCur + '"}');
 					let jsonMsg = JSON.parse(msg);
 
 					// send the input to loader class
-					window.postMessage(jsonMsg, window.location.hostname);
+					window.postMessage(jsonMsg);
 	
 					//Clear the input line buffer and cancle an active text selection
 					this._clearConsoleLineBuffer();
