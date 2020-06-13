@@ -5,10 +5,12 @@
 }
 
 :root{
-	--textColor:#face3e;
+	--textColor:rgb(255, 165, 0);
 	--textBackgroundColor:#555555;
 	--selectedTextColor:#FFFFFF;
 	--selectedTextBackgroundColor:darkcyan;
+
+	--infoColor: rgb(0, 250, 154);
 }
 		
 body{
@@ -80,6 +82,10 @@ body{
 .text{
 	white-space: pre;
 	font-family: "courier";
+}
+
+.info{
+	color: var(--infoColor);
 }
 
 

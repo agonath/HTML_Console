@@ -15,8 +15,8 @@ const FPS = 1000/30; // frames per second, update rate
 
 const LOCAL_ADDR = "http://127.0.0.1:5000";  //80";
 const LOCAL_ADDR_SSL = "https://127.0.0.1:443";
-const LOCALHOST = "http://localhost:5000";
-const LOCALHOST_SSL = "https://localhost:443";
+//const LOCALHOST = "http://localhost:5000";
+//const LOCALHOST_SSL = "https://localhost:443";
 
 
 // Enum for possible messages. (not yet used)
@@ -102,10 +102,10 @@ class MyConsole extends Object
 			//this.cmdWorker = new Worker("loader.js");
 			//this.cmdWorker.postMessage();
 			//console.log("Worker thread: " + this.cmdWorker);
-			this.loader = new Loader([LOCAL_ADDR, LOCAL_ADDR_SSL, LOCALHOST, LOCALHOST_SSL]);
+			this.loader = new Loader([LOCAL_ADDR, LOCAL_ADDR_SSL]); //LOCALHOST, LOCALHOST_SSL]);
 			this.loader.init();
 
-			console.log(window);
+			//console.log(window);
 
 		}
 	}
@@ -503,8 +503,8 @@ class MyConsole extends Object
 				{
 					case LOCAL_ADDR:
 					case LOCAL_ADDR_SSL:
-					case LOCALHOST:
-					case LOCALHOST_SSL:
+					//case LOCALHOST:
+					//case LOCALHOST_SSL:
 					{
 						switch(e.data.type)
 						{
@@ -524,7 +524,7 @@ class MyConsole extends Object
 
 							case MESSAGES.LOADER_RESULT:
 							{
-								this.printLine(e.data.data); // TODO
+								this.printLine(e.data.data, "text info");
 								break;
 							}
 
@@ -532,7 +532,7 @@ class MyConsole extends Object
                             {
                                 console.log("Message received: " + e.data.type + " " + e.data.data);
                                 // Execute the input
-                                this.loader.executeCmd(e.origin, e.data.data);
+                                this.loader.sendData(e.origin, e.data.data);
 								break;
 							}
 						}

@@ -23,6 +23,7 @@ class Loader extends Object
         this.result="";
         this.allowedServers = _serverAddr;
 
+        // Debug
         for(var x in this.allowedServers)
         {   console.log(this.allowedServers[x]); }
     }
@@ -38,22 +39,37 @@ class Loader extends Object
     }
 
 
-    // TODO
-    // Execute a command
     //
-    async executeCmd(_server, _data)
+    // Send data to server using the fetch api.
+    //
+    // _server = Server address
+    // _data = Data to be sent in JSON format
+    // _method = GET / POST ....
+    //
+    //
+    //
+    async sendData(_server, _data, _method='POST')
     {
         let payload = {
-                        method: 'POST',
+                        method: _method,
                         cache: 'no-cache',
                         headers: {'Content-Type':'application/json;charset=utf-8'},
                         body:_data
                       }
 
-        let _result = await fetch(_server, payload); // TODO: Error handling....
-        this.result = await _result.text();
-        console.log("Result: " + this.result);
-        this.sendResultToConsole(this.result); // TODO
+        let response = await fetch(_server, payload);
+        
+        if(response.ok === false)
+        {   
+            this.sendResultToConsole(response.status);
+            this.sendResultToConsole(response.statusText);
+            return;
+        }
+
+        this.sendResultToConsole(response.status);
+        this.sendResultToConsole(await response.text());
+
+
         return;
     }
 
@@ -98,7 +114,7 @@ class Loader extends Object
                             {
                                 console.log("Message received: " + _event.data.type + " " + event.data.data);
                                 // Execute the input
-                                this.executeCmd(_event.origin, _event.data.data);
+                                this.sendData(_event.origin, _event.data.data);                              
                                 break;
                             }
 
@@ -116,6 +132,3 @@ class Loader extends Object
         }
     }
 }
-
-
-//var myLoader = new Loader();
