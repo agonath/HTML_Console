@@ -1084,10 +1084,10 @@ class MyConsole extends Object
 			}
 
 			// get current entry
-			const entry = this.history[(this.currentlyActiveHistoryLine)];
+			const entry = this.history[this.currentlyActiveHistoryLine];
 			const len = entry.length;
 			// reset scroll direction for next key press
-			this.historyScrollDirection = 0;
+			//this.historyScrollDirection = 0;
 
 			console.log("Aktuelle Anzahl an Einträge in History: " + this.history.length);
 			console.table(this.history);
