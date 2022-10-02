@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, min-width=550px, initial-scale=1, user-scalable=no" /> 
+        <link rel="stylesheet" href="../static/CSS/generic.css" />
+
+		<script src="../static/JS/console.js" ></script>
+		<script src="../static/JS/loader.js" ></script>
+		<script>
+		
+		</script>
+
+	</head>
+	<body id="main">
+	
+		<div id="console">
+			<div id="text" class="text"><span id="cursor" class="cursor"></span></div>
+		</div>
+			
+		<script>
+			let con = new MyConsole();
+			console.log("Console: ", con);
+			con.init();
+			//let txtNode = document.getElementById("text");
+			//let buf = con.updateBuffer("Text", 0);
+			//con.updateCursorLine(txtNode, "Text", 4);
+			//buf = con.updateBuffer("Hallo", 1);
+			//con.updateCursorLine(txtNode, buf, 6);
+		</script>
+
+	</body>
+</html>

@@ -1,0 +1,153 @@
+*, ::before, ::after{
+	margin:0px;
+	padding:0px;
+	box-sizing:border-box;
+}
+
+:root{
+	--textColor:rgb(255, 165, 0);
+	--textBackgroundColor:#555555;
+	--selectedTextColor:#FFFFFF;
+	--selectedTextBackgroundColor:darkcyan;
+
+	--infoColor: rgb(0, 250, 154);
+}
+		
+body{
+	background-color: var(--textBackgroundColor);
+	position:absolute;
+	display:block;
+	top:0px;
+	left:0px;
+	min-width:100%;
+	min-height:100%;
+}
+		
+.flex-container{
+	display:flex;
+	flex: 1 100%;
+	flex-direction: row;
+	align-items: stretch;
+}
+
+.flex-center-left{
+	justify-content:start;
+	align-items: center;
+}
+		
+.flex-center-right{
+	justify-content:end;
+	align-items: center;
+}
+		
+.flex-center-center{
+	justify-content:center;
+	align-items: center;
+}
+
+.flex-top-left{
+	justify-content:start;
+	align-items: start;
+}
+		
+.flex-bottom-left{
+	justify-content:start;
+	align-items: end;
+}
+
+.flex-top-right{
+	justify-content:end;
+	align-items: start;
+}
+
+.flex-bottom-right{
+	justify-content:end;
+	align-items: end;
+}
+
+#console {
+
+	color: var(--textColor);
+	background-color: var(--textBackgroundColor);
+	padding: 5px 0px 0px 5px;
+}
+
+
+/*---------------*/
+/* Text stuff    */
+/*---------------*/
+/*pre#text{
+	font-family: "serif";
+}*/
+
+.text{
+	white-space: pre;
+	font-family: "courier";
+}
+
+.info{
+	color: var(--infoColor);
+	user-select: none;
+}
+
+
+
+.cursor{
+	display: inline-block;
+
+	animation-name: anim-blink;
+	animation-duration: 0.4s;
+	animation-timing-function: linear;
+	animation-direction: alternate;
+	animation-iteration-count: infinite;
+	animation-play-state: running;
+}
+
+.selected-text{
+	color: var(--selectedTextColor);
+	background-color: var(--selectedTextBackgroundColor);
+}
+
+/* OLD VERSION
+.cursor{
+	position:relative !important;
+	
+	/*--cursorPosition:0px;
+}
+
+/* 
+.cursor{
+	content: '\2588';
+	position: absolute;
+	display: inline-block;
+	margin-left: 1px;
+
+
+	left: var(--cursorPosition);
+
+	animation-name: anim-blink;
+	animation-duration: 0.7s;
+	animation-timing-function: linear;
+	animation-direction: alternate;
+	animation-iteration-count: infinite;
+}*/
+
+/*---------------*/
+/* Animations    */
+/*---------------*/
+
+@keyframes anim-blink{
+
+	from{
+		background-color: var(--textBackgroundColor);
+		color: var(--textColor);
+	}
+
+	to{
+		background-color: var(--textColor);
+		color: var(--textBackgroundColor);
+	}
+}
+		
+
+		
