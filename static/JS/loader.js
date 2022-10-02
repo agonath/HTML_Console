@@ -62,7 +62,7 @@ class Loader extends Object
     //
     sendResultToConsole(_data)
     {
-        let msg = {type:MESSAGES.LOADER_RESULT, data:_data};
+        let msg = {type:MESSAGES.RECEIVE, data:_data};
         console.log("In sendResultTo Console mit Nachricht: " + msg);
         window.postMessage(msg);
         return;
@@ -91,7 +91,7 @@ class Loader extends Object
                     {
                         switch(_event.data.type)
                         {
-                            case MESSAGES.LOADER_EXECUTE:
+                            case MESSAGES.SEND:
                             {
                                 console.log("Loader - Message received: " + _event.data.type + " " + _event.data.data);
                                 // Execute the input

@@ -4,7 +4,7 @@
 
 const VERSION_MAJOR = '0';
 const VERSION_MINOR = '3';
-const VERSION_MICRO = '0';
+const VERSION_MICRO = '1';
 const VERSION = String(VERSION_MAJOR + "." + VERSION_MINOR + "." + VERSION_MICRO);
 
 const CURSOR_START = "<span class=\"cursor\">";
@@ -20,7 +20,7 @@ const LOCAL_ADDR_SSL = "https://127.0.0.1:5443";
 
 
 // Enum for possible messages.
-const MESSAGES = { NONE:0, UPDATE:1, CLS:2, LOADER_EXECUTE:3, LOADER_RESULT:4};
+const MESSAGES = { NONE:0, UPDATE:1, CLS:2, SEND:3, RECEIVE:4};
 Object.freeze(MESSAGES);
 
 
@@ -33,7 +33,9 @@ class MyConsole extends Object
 
 		this.lineCounter = 0; // current number of lines
 		this.cursorPosition = 0; // line position of the cursor
-		this.history = []; // save the inputs made before - TODO
+
+		// Command history
+		this.history = []; // save the inputs made before
 		this.currentlyActiveHistoryLine = (this.history.length - 1); // Position counter by default points to the end of history
 		
 		this.textNode = document.getElementById("text");
@@ -72,7 +74,8 @@ class MyConsole extends Object
 		this._normalText = "";
 		this._coveredChar = "";
 		this._selectedText = "";
-		this._afterCurAndSelection = "";		
+		this._afterCurAndSelection = "";	
+
 	}
 
 
@@ -94,8 +97,8 @@ class MyConsole extends Object
 			// Register update function
 			//this.setIntervalId = setInterval(this.eventLoop.bind(this), FPS);
                         
-            	// New Version using "requestAnimationFrame". Initial call must be done manually.
-            	this.eventLoop2();
+            // New Version using "requestAnimationFrame". Initial call must be done manually.
+            this.eventLoop2();
 		
 			//Refresh buffer and make cursor visible
 			this._clearConsoleLineBuffer();
@@ -140,26 +143,26 @@ class MyConsole extends Object
 
     //
 	//	Event loop handler, all update goes here...
-    //      New Version, trying to use "requestAnimationFrame"...
-    //      TODO: Test it!!!!
+    //  New Version, trying to use "requestAnimationFrame"...
+    //      
 	//
 	eventLoop2()
 	{
 		
 		const self = this;
 
-        	let timeStamp = performance.now();
+        let timeStamp = performance.now();
 		let elapsed = timeStamp - this.lastTimeStamp;
-        	console.log(`Elapsed time: ${elapsed}`);
-		console.log(`TimeStamp time: ${timeStamp}`);
-		console.log(`Last Timestamp ${this.lastTimeStamp}`)
+        //console.log(`Elapsed time: ${elapsed}`);
+		//console.log(`TimeStamp time: ${timeStamp}`);
+		//console.log(`Last Timestamp ${this.lastTimeStamp}`)
 
 		// only update if needed
 		if(elapsed > FPS && this.updateReqFlag === true) //
 		{
 			this.updateCursorLine2(this.textNode, this.consoleBuffer, this.cursorPosition);
 			this.lastTimeStamp = (elapsed % FPS); //timeStamp;
-			console.log(`Drawing.... new last timestamp: ${this.lastTimeStamp}`);
+			//console.log(`Drawing.... new last timestamp: ${this.lastTimeStamp}`);
 		}		
 		// Next Frame
 		window.requestAnimationFrame(self.eventLoop2.bind(this));
@@ -553,15 +556,16 @@ class MyConsole extends Object
 								break;
 							}
 
-							case MESSAGES.LOADER_RESULT:
+							case MESSAGES.RECEIVE:
 							{
+								console.log("Received message from backend : " + e.origin + " " + e.data.type + " " + e.data.data);
 								this.printLine(e.data.data, "text info");
 								break;
 							}
 
-							case MESSAGES.LOADER_EXECUTE:
+							case MESSAGES.SEND:
                             {
-                                console.log("Message received: " + e.data.type + " " + e.data.data);
+                                console.log("Got message, send to backend : " + e.origin + " " + e.data.type + " " + e.data.data);
                                 // Execute the input
                                 this.loader.sendData(e.origin, e.data.data);
 								break;
@@ -669,7 +673,7 @@ class MyConsole extends Object
 
 					case 38: // Arrow Up
 					{
-						this._handleArrowKeysUpDown(e, this.textNode);
+						this._handleArrowKeysUpDown(e, true);
 						break;
 					}
 					
@@ -683,7 +687,7 @@ class MyConsole extends Object
 
 					case 40: // Arrow Down
 					{
-						this._handleArrowKeysUpDown(e, this.textNode, false);
+						this._handleArrowKeysUpDown(e, false);
 						break;
 					}
 
@@ -830,41 +834,43 @@ class MyConsole extends Object
 		switch(this.consoleBuffer.length)
 		{
 			case 0:
-				{	return; }
+			{	return; }
 			
 			default:
+			{
+				let beforeCur = _textNode.innerHTML.slice(0, this.cursorPosition);
+				//console.log("Zeile vor Enter: " + beforeCur);
+
+				//handle the "cls" command directly
+				if(beforeCur.toLowerCase() === "cls")
 				{
-					let beforeCur = _textNode.innerHTML.slice(0, this.cursorPosition);
-					//console.log("Zeile vor Enter: " + beforeCur);
-
-					//handle the "cls" command directly
-					if(beforeCur.toLowerCase() === "cls")
-					{
-						let msg= '{"type":'+ MESSAGES.CLS + ',"data":""}';
-						msg = JSON.parse(msg);
-						window.postMessage(msg);
-					}
-					else // everything else sent to loader class
-					{
-						// Print the line to console and update the line counter accordingly.
-						this.printLine(beforeCur, "text");
-
-						let msg = String('{"type":' + MESSAGES.LOADER_EXECUTE + ',"data":"' + beforeCur + '"}'); //TODO: add Bearer Key for authentification
-						let jsonMsg = JSON.parse(msg);
-
-						// send the input to loader class
-						window.postMessage(jsonMsg);
-					}
-
-					//Clear the input line buffer and cancle an active text selection
-					this._clearConsoleLineBuffer();
-
-					//console.log(String.fromCharCode(_e.keyCode));
-					
-					this.history.push(beforeCur); //update history and counter
-					this.currentlyActiveHistoryLine += 1;
-					return beforeCur; // return the input, text only
+					let msg= '{"type":'+ MESSAGES.CLS + ',"data":""}';
+					msg = JSON.parse(msg);
+					window.postMessage(msg);
 				}
+				else // everything else sent to loader class
+				{
+					// Print the line to console and update the line counter accordingly.
+					this.printLine(beforeCur, "text");
+
+					let msg = String('{"type":' + MESSAGES.SEND + ',"data":"' + beforeCur + '"}'); //TODO: add Bearer Key for authentification
+					let jsonMsg = JSON.parse(msg);
+
+					// send the input to loader class
+					window.postMessage(jsonMsg);
+				}
+
+				//Clear the input line buffer and cancle an active text selection
+				this._clearConsoleLineBuffer();
+
+				//console.log(String.fromCharCode(_e.keyCode));
+				
+				// Update command history
+				this.history.push(beforeCur); //update history and counter
+				this.currentlyActiveHistoryLine += 1;
+
+				return beforeCur; // return the input, text only
+			}
 		}		
 	}
 	
@@ -1043,66 +1049,68 @@ class MyConsole extends Object
 
 
 	//
-	// Scrolling the history -- TODO, [Enter] does nothing, because line contains nothing
+	// Scrolling the history
 	// Parameter:
 	//				_e -> Event object
-	//				_textNode -> current line of text
 	//				_dir -> direction, default is true, arrow key [up], false is opposite
  	//
-	 _handleArrowKeysUpDown(_e, _textNode, _dir=true)
-	 {
-		 const hisLen = this.history.length;
+	_handleArrowKeysUpDown(_e, _dir=true)
+	{
+		const historyMax = this.history.length-1;
 
-		if(0 < hisLen)
+
+		if(0 < this.history.length)
 		{
-			//Clear the input line buffer and cancel an active text selection
-			//this._clearConsoleLineBuffer();
-			const entry = this.history[this.currentlyActiveHistoryLine];
-			const len = entry.length;
+			//decide whats next
+			switch(_dir)
+			{
+				case false: // from first to last entry (down-key)
+				{
 
-			console.log("Aktuelle Anzahl an Einträge in History: " + hisLen);
+					// Point to next element if possible, update scroll direction
+					if(historyMax > this.currentlyActiveHistoryLine)
+					{	this.currentlyActiveHistoryLine = this.currentlyActiveHistoryLine + 1; }
+					break; 
+				}
+
+				case true: // from last to first entry (up-key)
+				default:
+				{
+					// Point to next element if possible
+					if(0 < this.currentlyActiveHistoryLine)
+					{	this.currentlyActiveHistoryLine = this.currentlyActiveHistoryLine - 1; }
+					break;
+				}
+			}
+
+			// get current entry
+			const entry = this.history[(this.currentlyActiveHistoryLine)];
+			const len = entry.length;
+			// reset scroll direction for next key press
+			this.historyScrollDirection = 0;
+
+			console.log("Aktuelle Anzahl an Einträge in History: " + this.history.length);
+			console.table(this.history);
 			console.log("Aktuell aktiver Eintrag: " + entry);
 			console.log("History Position: " + this.currentlyActiveHistoryLine);
 
 			//Update the line
-			this.updateCursorLine2(_textNode, entry, len);
-
-			//decide whats next
-			switch(_dir)
-			{
-				case false:
-					{
-						// Point to next element if possible
-						if((hisLen-1) > this.currentlyActiveHistoryLine)
-						{	this.currentlyActiveHistoryLine += 1; }
-						break; 
-					}
-
-				case true:
-				default:
-					{
-						// Point to next element if possible
-						if(0 < this.currentlyActiveHistoryLine)
-						{	this.currentlyActiveHistoryLine -= 1; }
-						break;
-					}
-			}
-			// TODO: Do something, stupid
-
-			//this.cursorPosition = this.consoleBuffer.length;
-			//this.updateReqFlag = true;
+			this.selectionActive = false;
+			this._clearConsoleLineBuffer();
+			this.updateBuffer(entry, this.cursorPosition);
+			this.updateReqFlag = true;
 		}
 		return;
-	 }
+	}
 
 
 	 //
 	 // Pos1 key, set cursor to the begin of the line.
 	 //
-	 _handlePos1Key(_e, _textNode)
-	 {
-		 switch(this.shiftKeyPressed)
-		 {
+	_handlePos1Key(_e, _textNode)
+	{
+		switch(this.shiftKeyPressed)
+		{
 			case true:
 			{
 				// Update the selection start position, everything in front of the cursor is selected. 
@@ -1118,22 +1126,22 @@ class MyConsole extends Object
 				this.selectionActive = false;
 				break;
 			}
-		 }
+		}
 		 
-		 this.cursorPosition = 0;
-		 this.updateReqFlag = true;
-		 //window.postMessage("update");
-	 }
+		this.cursorPosition = 0;
+		this.updateReqFlag = true;
+		//window.postMessage("update");
+	}
 
 
 
 	 //
 	 // End key, set cursor to the end of line.
 	 //
-	 _handleEndKey(_e, _textNode)
-	 {
-		 switch(this.shiftKeyPressed)
-		 {
+	_handleEndKey(_e, _textNode)
+	{
+		switch(this.shiftKeyPressed)
+		{
 			case true:
 			{
 				// Update the selection start position, everything behind the cursor is selected.
@@ -1149,12 +1157,12 @@ class MyConsole extends Object
 				this.selectionActive = false;
 				break;
 			}
-		 }
+		}
 		 
 		 this.cursorPosition = this.consoleBuffer.length;
 		 this.updateReqFlag = true;
 		 //window.postMessage("update");
-	 }
+	}
 	
 	
 }// end class
