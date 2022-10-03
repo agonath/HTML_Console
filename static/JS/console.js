@@ -37,6 +37,7 @@ class MyConsole extends Object
 		// Command history
 		this.history = []; // save the inputs made before
 		this.currentlyActiveHistoryLine = (this.history.length - 1); // Position counter by default points to the end of history
+		this.firstTimeHistoryUsedFlag = true; // Status flag for first time history usage, important for navigation through history
 		
 		this.textNode = document.getElementById("text");
 		this.cursorNode = document.getElementById("cursor");
@@ -867,7 +868,8 @@ class MyConsole extends Object
 				
 				// Update command history
 				this.history.push(beforeCur); //update history and counter
-				this.currentlyActiveHistoryLine += 1;
+				this.currentlyActiveHistoryLine = (this.history.length - 1); // += 1 | always reset to the last added entry
+				this.firstTimeHistoryUsedFlag = true; // Reset status flag
 
 				return beforeCur; // return the input, text only
 			}
@@ -1054,9 +1056,12 @@ class MyConsole extends Object
 	//				_e -> Event object
 	//				_dir -> direction, default is true, arrow key [up], false is opposite
  	//
+	// TODO: Verhalten beim ersten [up] Tastendruck stimmt noch nicht, da die Bedingung das Flag auf false prüft 
+	// 
 	_handleArrowKeysUpDown(_e, _dir=true)
 	{
-		const historyMax = this.history.length-1;
+		const historyMaxIndex = this.history.length-1; // max selectable value index
+		let entry = "";
 
 
 		if(0 < this.history.length)
@@ -1068,7 +1073,7 @@ class MyConsole extends Object
 				{
 
 					// Point to next element if possible, update scroll direction
-					if(historyMax > this.currentlyActiveHistoryLine)
+					if(historyMaxIndex > this.currentlyActiveHistoryLine)
 					{	this.currentlyActiveHistoryLine = this.currentlyActiveHistoryLine + 1; }
 					break; 
 				}
@@ -1076,23 +1081,17 @@ class MyConsole extends Object
 				case true: // from last to first entry (up-key)
 				default:
 				{
-					// Point to next element if possible
-					if(0 < this.currentlyActiveHistoryLine)
-					{	this.currentlyActiveHistoryLine = this.currentlyActiveHistoryLine - 1; }
+					// Already reached the first entry in history?
+					if(0 < this.currentlyActiveHistoryLine && false === this.firstTimeHistoryUsedFlag)
+					{	this.currentlyActiveHistoryLine = (this.currentlyActiveHistoryLine - 1); }
 					break;
 				}
 			}
-
+			
 			// get current entry
-			const entry = this.history[this.currentlyActiveHistoryLine];
-			const len = entry.length;
-			// reset scroll direction for next key press
-			//this.historyScrollDirection = 0;
-
-			console.log("Aktuelle Anzahl an Einträge in History: " + this.history.length);
-			console.table(this.history);
-			console.log("Aktuell aktiver Eintrag: " + entry);
-			console.log("History Position: " + this.currentlyActiveHistoryLine);
+			entry = this.history[this.currentlyActiveHistoryLine];
+			// set the usage flag
+			this.firstTimeHistoryUsedFlag = false;
 
 			//Update the line
 			this.selectionActive = false;
