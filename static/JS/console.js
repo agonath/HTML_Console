@@ -839,39 +839,34 @@ class MyConsole extends Object
 			
 			default:
 			{
-				let beforeCur = _textNode.innerHTML.slice(0, this.cursorPosition);
+				let textBeforeCursor = _textNode.innerHTML.slice(0, this.cursorPosition);
 				//console.log("Zeile vor Enter: " + beforeCur);
 
 				//handle the "cls" command directly
-				if(beforeCur.toLowerCase() === "cls")
+				if(textBeforeCursor.toLowerCase() === "cls")
 				{
-					let msg= '{"type":'+ MESSAGES.CLS + ',"data":""}';
-					msg = JSON.parse(msg);
+					let msg= {type:MESSAGES.CLS,data:""};
 					window.postMessage(msg);
 				}
 				else // everything else sent to loader class
 				{
 					// Print the line to console and update the line counter accordingly.
-					this.printLine(beforeCur, "text");
+					this.printLine(textBeforeCursor, "text");
 
-					let msg = String('{"type":' + MESSAGES.SEND + ',"data":"' + beforeCur + '"}'); //TODO: add Bearer Key for authentification
-					let jsonMsg = JSON.parse(msg);
-
+					let msg = {type:MESSAGES.SEND, data: String(textBeforeCursor)};
 					// send the input to loader class
-					window.postMessage(jsonMsg);
+					window.postMessage(msg);
 				}
 
 				//Clear the input line buffer and cancle an active text selection
 				this._clearConsoleLineBuffer();
-
-				//console.log(String.fromCharCode(_e.keyCode));
 				
 				// Update command history
-				this.history.push(beforeCur); //update history and counter
+				this.history.push(textBeforeCursor); //update history and counter
 				this.currentlyActiveHistoryLine = (this.history.length - 1); // += 1 | always reset to the last added entry
 				this.firstTimeHistoryUsedFlag = true; // Reset status flag
 
-				return beforeCur; // return the input, text only
+				return textBeforeCursor; // return the input, text only
 			}
 		}		
 	}
@@ -1056,7 +1051,7 @@ class MyConsole extends Object
 	//				_e -> Event object
 	//				_dir -> direction, default is true, arrow key [up], false is opposite
  	//
-	// TODO: Verhalten beim ersten [up] Tastendruck stimmt noch nicht, da die Bedingung das Flag auf false prüft 
+	//
 	// 
 	_handleArrowKeysUpDown(_e, _dir=true)
 	{

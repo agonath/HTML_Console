@@ -34,7 +34,7 @@ class Loader extends Object
     // Send data to server using the fetch api.
     //
     // _server = Server address
-    // _data = Data to be sent in JSON format
+    // _data = Data to be sent as JavaScript-Object
     // _method = GET / POST ....
     //
     //
@@ -45,7 +45,7 @@ class Loader extends Object
                         method: _method,
                         cache: 'no-cache',
                         headers: {'Content-Type':'application/json;charset=utf-8'},
-                        body:_data
+                        body: JSON.stringify(_data)
                       }
 
         let response = await fetch(_server, payload);
