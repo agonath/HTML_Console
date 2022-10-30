@@ -11,6 +11,7 @@ Behaviour
 -----------
   - [Enter] - send/end a command
   - [Arrow key left/right] - cursor movement
+  - [Arrow key up/down - command history
   - [Pos1] - move cursor to first position in line
   - [Del] - move cursor to last position in line
   - [Shift] + [Arrow left/right] - used to select text in line
@@ -19,7 +20,6 @@ Behaviour
 Missing/ Todos
 -----------------
 [CTRL+C] / [Crtl+V] - ist theoretical implemented, but due to browser restrictions not working. (need to work around)
-Command history and [Arrow key up/down] is not implemented.
 The "backend" needs real functionality.
 Some sort of web token based security must be added. (Json web token / JWT)
 
