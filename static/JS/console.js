@@ -526,10 +526,7 @@ class MyConsole extends Object
 	//
 	handleInput(e)
 	{
-		//e.preventDefault();
-		
-		// ---|Debug|---
-		//console.log("Handele input -> origin: " + e.origin);
+		//e.preventDefault(); // Dadurch aber keine Browser Tastatur Shortcuts möglich
 
 		switch(e.type)
 		{
@@ -583,6 +580,8 @@ class MyConsole extends Object
 
 			case 'keyup':
 			{
+				e.stopPropagation();
+
 				switch(e.keyCode)
 				{
 					case 16: //Shift-key
@@ -664,8 +663,9 @@ class MyConsole extends Object
 						break;
 					}
 
-					case 37: // Arrow Left + check for shift key
+					case 37: // Arrow Left
 					{
+						e.preventDefault();
 						//this.shiftKeyPressed = e.shiftKey;
 						//console.log("Shiftkey: " + this.shiftKeyPressed);
 						this._handleLeftArrowKey(e, this.textNode);
@@ -674,12 +674,14 @@ class MyConsole extends Object
 
 					case 38: // Arrow Up
 					{
+						e.preventDefault();
 						this._handleArrowKeysUpDown(e, true);
 						break;
 					}
 					
-					case 39: // Arrow Right + check for shift key
+					case 39: // Arrow Right
 					{
+						e.preventDefault();
 						//this.shiftKeyPressed = e.shiftKey;
 						//console.log("Shiftkey: " + this.shiftKeyPressed);
 						this._handleRightArrowKey(e, this.textNode);
@@ -688,6 +690,7 @@ class MyConsole extends Object
 
 					case 40: // Arrow Down
 					{
+						e.preventDefault();
 						this._handleArrowKeysUpDown(e, false);
 						break;
 					}

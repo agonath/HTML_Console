@@ -50,8 +50,8 @@ class Loader extends Object
 
         let response = await fetch(_server, payload);
 
-        this.sendResultToConsole(response.status);
-        this.sendResultToConsole(await response.text());
+        this.receiveData(response.status);
+        this.receiveData(await response.text());
 
        return;
     }
@@ -60,7 +60,7 @@ class Loader extends Object
     // TODO
     // Send results from server to console.
     //
-    sendResultToConsole(_data)
+    receiveData(_data)
     {
         let msg = {type:MESSAGES.RECEIVE, data:_data};
         console.log("In sendResultTo Console mit Nachricht: " + msg);
@@ -69,7 +69,7 @@ class Loader extends Object
     }
 
     // Event handler -- not used at the moment
-    handleEvent(_event)
+ /*   handleEvent(_event)
     {
         switch(_event.type)
         {
@@ -110,5 +110,5 @@ class Loader extends Object
             default:
             {   return; }
         }
-    }
+    } */
 }
