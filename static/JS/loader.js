@@ -51,7 +51,7 @@ class Loader extends Object
         let response = await fetch(_server, payload);
 
         this.receiveData(response.status);
-        this.receiveData(await response.text());
+        this.receiveData(await response.json(), response.type);
 
        return;
     }
@@ -60,7 +60,7 @@ class Loader extends Object
     // TODO
     // Send results from server to console.
     //
-    receiveData(_data)
+    receiveData(_data, _type)
     {
         let msg = {type:MESSAGES.RECEIVE, data:_data};
         console.log("In sendResultTo Console mit Nachricht: " + msg);

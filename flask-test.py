@@ -1,8 +1,10 @@
 from asyncio.windows_events import NULL
+import subprocess
 import sys
 import os
 import asyncio
 from urllib.request import Request
+import json
 
 from flask import Flask, render_template, request, redirect, session
 
@@ -25,7 +27,19 @@ flaskApp = Flask(__name__)
 @flaskApp.route("/", methods=['GET', 'POST'])
 def index():
     if(request.method == 'POST'):
-        return asyncio.run(execute(request.json))
+
+        jsonResult : dict = {}
+
+        result = asyncio.run(execute(request.json))
+
+        for line in result:
+            jsonResult["line"] = line
+        
+       # for (key, value) in jsonResult:
+        #    print(key + " : " + value)
+
+        return json.dumps(jsonResult)
+
     else:
         return render_template('index.html') 
 
@@ -38,21 +52,50 @@ def index():
     TODO: Im Moment keine Input-Nachfragen (interaktiv) möglich.
 
 """
-async def execute(param:str) -> str:
+async def execute(param:str) -> list:
 
     print("In Funktion execute...")
+
+    result:list = []
        
-    proc = await asyncio.create_subprocess_shell(param, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    #proc = await asyncio.create_subprocess_shell(param, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
 
-    stdOut, stdError = await proc.communicate()
+    proc2 = subprocess.run(param, stdout=subprocess.PIPE, shell=True, stderr=subprocess.PIPE, text=True, check=True, timeout=120)
 
-    if(stdOut != NULL):
-        print(f'[stdOut]\n{stdOut}')
-        return stdOut
+    #stdOut, stdError = await proc.communicate()
 
-    elif(stdError != NULL):
-        print(f'[stdError]\n{stdError}')
-        return stdError
+    stdout2 = proc2.stdout
+    stderror2 = proc2.stderr
+
+   # stdOutNew = stdOut.decode()
+   # stdErrorNew = stdError.decode()
+
+    #print("Neuer STDOUT String: " + stdOutNew)
+
+    # Output
+    #if(stdOutNew != NULL):
+    if(stdout2 is not None and stdout2 != NULL):
+        #print(f'[stdOut]\n{stdOut}')
+        
+        for line in stdout2.split("\n"):
+            result.append(line)
+
+        for line in result:
+            print(f"Zeile gefunden: {line}")
+
+        return result
+
+    
+
+    # Errors
+    elif(stderror2 != NULL and stderror2 is not None):
+       # print(f'[stdError]\n{stdError}')
+
+        for line in stderror2.split(os.linesep):
+          # result.append[line]
+          print(line)
+
+        return result
 
 
 
