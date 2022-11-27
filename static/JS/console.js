@@ -701,24 +701,27 @@ class MyConsole extends Object
 						break;
 					}
 
+					// TODO Test it
 					case 67: // 'c' key
 					{
 						switch(e.ctrlKey)
 						{
 							case true:
 							{
-								// stupid method for copy to clipboard.....but doesn't work because of browser limitations/restrictions :-(
-								let frag = document.createDocumentFragment();
-								let node = document.createElement("input");
-								frag.appendChild(node);
-
-								node.setAttribute("type", "text");
-								node.textContent = this.currentSelection;
-								node.style.display = "none";
-								node.select();
-								document.body.appendChild(node);
-								console.log("Rückgabewert: " + document.execCommand("copy"));
-								document.body.removeChild(node);
+								navigator.permissions.query({name:'clipboard'}).then(function(result)
+								{
+									if (result.state == 'granted')
+									{
+										navigator.clipboard.writeText(this.currentSelection);
+									}
+									else if (result.state == 'prompt')
+									{
+										navigator.clipboard.writeText(this.currentSelection);
+									}
+									else if (result.state == 'denied')
+									{	return; }
+								});
+								
 								break;
 							}
 
@@ -731,17 +734,31 @@ class MyConsole extends Object
 						break;
 					}
 
-					// TODO: Doesn't work because of browser restrictions......
+					// TODO: Test it
 					case 86: // 'v' key
 					{
 						switch(e.ctrlKey)
 						{
 							case true:
 							{
-								// Copy last selected text to clipboard
-							//	document.execCommand("paste", false, this.currentSelection);
-								var clipboardText = document.execCommand("paste");
-								console.log("Text im Clipboard: " + clipboardText);
+								navigator.permissions.query({name:'clipboard'}).then(function(result)
+								{
+									if (result.state === 'granted')
+									{
+										// Paste from Clipboard
+										navigator.clipboard.readText().then((clipText) => (this.updateBuffer(clipText, this.cursorPosition)));
+										this.updateReqFlag = true;
+									}
+									else if (result.state === 'prompt')
+									{
+										// Paste from Clipboard
+										navigator.clipboard.readText().then((clipText) => (this.updateBuffer(clipText, this.cursorPosition)));
+										this.updateReqFlag = true;
+									}
+									else if (result.state === 'denied')
+									{	return; }
+								});
+
 								break;
 							}
 
