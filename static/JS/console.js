@@ -701,24 +701,15 @@ class MyConsole extends Object
 						break;
 					}
 
+					// TODO Test it
 					case 67: // 'c' key
 					{
 						switch(e.ctrlKey)
 						{
 							case true:
 							{
-								// stupid method for copy to clipboard.....but doesn't work because of browser limitations/restrictions :-(
-								let frag = document.createDocumentFragment();
-								let node = document.createElement("input");
-								frag.appendChild(node);
-
-								node.setAttribute("type", "text");
-								node.textContent = this.currentSelection;
-								node.style.display = "none";
-								node.select();
-								document.body.appendChild(node);
-								console.log("Rückgabewert: " + document.execCommand("copy"));
-								document.body.removeChild(node);
+								// Clipboard write is automatically  granted for active browser tabs.
+								navigator.clipboard.writeText(this.currentSelection);
 								break;
 							}
 
@@ -731,17 +722,55 @@ class MyConsole extends Object
 						break;
 					}
 
-					// TODO: Doesn't work because of browser restrictions......
+					// TODO: Doesn't work in Firefox
 					case 86: // 'v' key
 					{
 						switch(e.ctrlKey)
 						{
 							case true:
 							{
-								// Copy last selected text to clipboard
-							//	document.execCommand("paste", false, this.currentSelection);
-								var clipboardText = document.execCommand("paste");
-								console.log("Text im Clipboard: " + clipboardText);
+								// Chrome only
+								this.updateBuffer(navigator.clipboard.readText(), this.cursorPosition);
+								this.updateReqFlag = true; 
+
+								/*navigator.permissions.query({name:'clipboard-read'}).then((result) => {
+									if (result.state === 'granted') 
+									{
+										this.updateBuffer(clipText, this.cursorPosition);
+										this.updateReqFlag = true;
+									}
+									
+									else if (result.state === 'prompt')
+									{
+										console.log("Clipboard-Read --> Prompt");
+										clipboard.permissions.request().then((permission)=>{
+											if('granted' === permission)
+											{
+												this.updateBuffer(clipText, this.cursorPosition);
+												this.updateReqFlag = true;
+											}
+										});
+									}
+								});
+
+							/*	if('granted' ===)
+								{
+									Clipboard.readText().then((clipText) => (this.updateBuffer(clipText, this.cursorPosition)));
+									this.updateReqFlag = true;
+									break;
+								}
+								else if('denied' !== Clipboard.permission) // status unknown, ask user
+								{
+									Clipboard.requestPermission().then((permission) => {
+										// If the user accepts, lets paste it
+										if (permission === "granted")
+										{
+											Clipboard.readText().then((clipText) => (this.updateBuffer(clipText, this.cursorPosition)));
+											this.updateReqFlag = true;
+										}
+									});
+								}
+							*/	
 								break;
 							}
 
