@@ -57,44 +57,27 @@ async def execute(param:str) -> list:
     print("In Funktion execute...")
 
     result:list = []
-       
-    #proc = await asyncio.create_subprocess_shell(param, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    processOutput = None
 
-    proc2 = subprocess.run(param, stdout=subprocess.PIPE, shell=True, stderr=subprocess.PIPE, text=True, check=True, timeout=120)
 
-    #stdOut, stdError = await proc.communicate()
+    try:
+        processOutput = subprocess.run(param, stdout=subprocess.PIPE, shell=True, stderr=subprocess.PIPE, text=True, check=True, timeout=120) 
 
-    stdout2 = proc2.stdout
-    stderror2 = proc2.stderr
-
-   # stdOutNew = stdOut.decode()
-   # stdErrorNew = stdError.decode()
-
-    #print("Neuer STDOUT String: " + stdOutNew)
-
-    # Output
-    #if(stdOutNew != NULL):
-    if(stdout2 is not None and stdout2 != NULL):
-        #print(f'[stdOut]\n{stdOut}')
+        # Output
+        if(processOutput.stdout is not None and processOutput.stdout != NULL):
         
-        for line in stdout2.split("\n"):
-            result.append(line)
+            for line in processOutput.stdout.split("\n"):
+                result.append(line)
 
-        for line in result:
-            print(f"Zeile gefunden: {line}")
+            for line in result:
+                print(f"Zeile gefunden: {line}")
 
         return result
 
-    
+    # Error-Channel
+    except(subprocess.CalledProcessError) as error:
 
-    # Errors
-    elif(stderror2 != NULL and stderror2 is not None):
-       # print(f'[stdError]\n{stdError}')
-
-        for line in stderror2.split(os.linesep):
-          # result.append[line]
-          print(line)
-
+        print(f"Error: {error.args} --> StdError: {error.stderr}")
         return result
 
 
