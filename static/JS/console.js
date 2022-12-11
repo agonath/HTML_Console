@@ -517,6 +517,7 @@ class MyConsole extends Object
 
 		// Insert new line before the input line.
 		this.console.insertBefore(line, this.textNode);
+		this.textNode.scrollIntoView({block: "end"});
 	}
 
 
