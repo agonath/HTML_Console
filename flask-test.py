@@ -73,12 +73,9 @@ async def execute(param:str) -> list:
 
         # Output
         if(processOutput.stdout is not None):
-            start = time.perf_counter()
+            
             for line in processOutput.stdout.split("\n"):
                 result.append(await escape2HTML(line))
-
-            end=time.perf_counter()
-            print("Time: " + str((end-start)))
             
         return result
 
