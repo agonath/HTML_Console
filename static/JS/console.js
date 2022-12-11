@@ -520,6 +520,17 @@ class MyConsole extends Object
 	}
 
 
+
+	/*
+		Print JSON data to console, update the line counter.
+	*/
+	printJsonData(_json, _cssClassName="")
+	{
+		console.table(_json);
+		Object.keys(_json).forEach(key => this.printLine(_json[key], _cssClassName));
+	}
+
+
 	
 	//
 	// Input Handler
@@ -557,7 +568,8 @@ class MyConsole extends Object
 							case MESSAGES.RECEIVE:
 							{
 								console.log("Received message from backend : " + e.origin + " " + e.data.type + " " + e.data.data);
-								this.printLine(e.data.data, "text info");
+								//this.printLine(e.data.data, "text info");
+								this.printJsonData(e.data.data, "text info");
 								break;
 							}
 

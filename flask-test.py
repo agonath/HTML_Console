@@ -1,10 +1,10 @@
-from asyncio.windows_events import NULL
 import subprocess
 import sys
 import os
 import asyncio
 from urllib.request import Request
 import json
+import html
 
 from flask import Flask, render_template, request, redirect, session
 
@@ -19,7 +19,7 @@ saveError = sys.stderr
 SECRET_KEY = "Super Duper Secret Key" #TODO: Change this, secret key to sign Flask's sessions
 RANDOM_KEY = "not Random" #TODO: Change this
 
-connected : bool = False
+connected :bool = False
 
 
 flaskApp = Flask(__name__)
@@ -32,13 +32,17 @@ def index():
 
         result = asyncio.run(execute(request.json))
 
+        counter:int = 0
         for line in result:
-            jsonResult["line"] = line
+           jsonResult[str(counter)] = line
+           counter += 1
         
-       # for (key, value) in jsonResult:
-        #    print(key + " : " + value)
+       # for item in jsonResult.items():
+        #    print(item)
 
-        return json.dumps(jsonResult)
+        print(json.dumps(jsonResult))
+
+        return json.dumps(jsonResult, ensure_ascii=False)
 
     else:
         return render_template('index.html') 
@@ -64,13 +68,13 @@ async def execute(param:str) -> list:
         processOutput = subprocess.run(param, stdout=subprocess.PIPE, shell=True, stderr=subprocess.PIPE, text=True, check=True, timeout=120) 
 
         # Output
-        if(processOutput.stdout is not None and processOutput.stdout != NULL):
+        if(processOutput.stdout is not None):
         
             for line in processOutput.stdout.split("\n"):
-                result.append(line)
+                result.append(await escape2HTML(line))#html.escape(line))
 
-            for line in result:
-                print(f"Zeile gefunden: {line}")
+            #for line in result:
+            #    print(f"Zeile gefunden: {line}")
 
         return result
 
@@ -78,8 +82,26 @@ async def execute(param:str) -> list:
     except(subprocess.CalledProcessError) as error:
 
         print(f"Error: {error.args} --> StdError: {error.stderr}")
+
+        for line in error.stderr.split("\n"):
+            result.append(await escape2HTML(line))
+
         return result
 
+
+
+async def escape2HTML(_inputString :str):
+    newString :str = html.escape(_inputString)
+
+    newString = newString.replace('ä', '&#196;')
+    newString = newString.replace('ö', '&ouml;')
+    newString = newString.replace('ü', '&uuml;')
+    newString = newString.replace('Ä', '&Auml;')
+    newString = newString.replace('Ö', '&Ouml;')
+    newString = newString.replace('Ü', '&Uuml;')
+    newString = newString.replace('ß', '&szlig;')
+
+    return newString
 
 
 

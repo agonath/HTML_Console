@@ -25,7 +25,7 @@ class Loader extends Object
     //
     init()
     {
-        const self = this; // needed to keep the reference of this to our console class object
+        //const self = this; // needed to keep the reference of this to our console class object
         //addEventListener("message", function(_e){ return self.handleEvent(_e);});
     }
 
@@ -63,9 +63,8 @@ class Loader extends Object
     receiveData(_data, _type)
     {
         let msg = {type:MESSAGES.RECEIVE, data:_data};
-        console.log("In sendResultTo Console mit Nachricht: " + msg);
+        console.log("In sendResultTo Console mit Nachricht: " + msg + " und Daten: " + JSON.stringify(_data));
         window.postMessage(msg);
-        return;
     }
 
     // Event handler -- not used at the moment
