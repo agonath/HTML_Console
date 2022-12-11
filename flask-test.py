@@ -2,6 +2,7 @@ import subprocess
 import sys
 import os
 import asyncio
+import time
 from urllib.request import Request
 import json
 import html
@@ -20,6 +21,9 @@ SECRET_KEY = "Super Duper Secret Key" #TODO: Change this, secret key to sign Fla
 RANDOM_KEY = "not Random" #TODO: Change this
 
 connected :bool = False
+
+# HTML Escape Chars
+replaceChars :dict = {'&':'&amp;', '"':'&#34;', '\'':'&#39;', '<':'&lt;', '>':'&gt;', 'ä':'&auml;', 'ö':'&ouml;', 'ü':'&uuml;', 'Ä':'&Auml;', 'Ö':'&Ouml;', 'Ü':'&Uuml;', 'ß':'&szlig;'}
 
 
 flaskApp = Flask(__name__)
@@ -40,7 +44,7 @@ def index():
        # for item in jsonResult.items():
         #    print(item)
 
-        print(json.dumps(jsonResult))
+        #print(json.dumps(jsonResult))
 
         return json.dumps(jsonResult, ensure_ascii=False)
 
@@ -69,13 +73,13 @@ async def execute(param:str) -> list:
 
         # Output
         if(processOutput.stdout is not None):
-        
+            start = time.perf_counter()
             for line in processOutput.stdout.split("\n"):
-                result.append(await escape2HTML(line))#html.escape(line))
+                result.append(await escape2HTML(line))
 
-            #for line in result:
-            #    print(f"Zeile gefunden: {line}")
-
+            end=time.perf_counter()
+            print("Time: " + str((end-start)))
+            
         return result
 
     # Error-Channel
@@ -90,18 +94,17 @@ async def execute(param:str) -> list:
 
 
 
-async def escape2HTML(_inputString :str):
-    newString :str = html.escape(_inputString)
+"""
+    Umlaute, Sonderzeichen ersetzen
+"""
+async def escape2HTML(_inputString :str) -> str:
 
-    newString = newString.replace('ä', '&#196;')
-    newString = newString.replace('ö', '&ouml;')
-    newString = newString.replace('ü', '&uuml;')
-    newString = newString.replace('Ä', '&Auml;')
-    newString = newString.replace('Ö', '&Ouml;')
-    newString = newString.replace('Ü', '&Uuml;')
-    newString = newString.replace('ß', '&szlig;')
+    tempString :str
 
-    return newString
+    for key, value in replaceChars.items():
+        tempString = _inputString.replace(key , value)
+
+    return tempString
 
 
 
