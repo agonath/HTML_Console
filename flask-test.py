@@ -18,6 +18,9 @@ saveError = sys.stderr
 SECRET_KEY = "Super Duper Secret Key" #TODO: Change this, secret key to sign Flask's sessions
 RANDOM_KEY = "not Random" #TODO: Change this
 
+# Change directory allowed?
+CHANGE_DIR = True
+
 connected :bool = False
 
 # HTML / Unicode Escape Chars
@@ -83,10 +86,16 @@ async def execute(param:str) -> list:
 
     result:list = []
     processOutput = None
+    cdFlag :bool = False
 
+    if(param.startswith("cd ")):
+        cdFlag=True
 
     try:
-        processOutput = subprocess.run(param, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True)
+        if(CHANGE_DIR == True and cdFlag == True):
+            pass #processOutput = TODO
+        else:
+            processOutput = subprocess.run(param, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True)
 
         # Output
         if(processOutput.stdout is not None):
