@@ -1,11 +1,9 @@
 import subprocess
 import sys
-import os
 import asyncio
 import time
 from urllib.request import Request
 import json
-import html
 
 from flask import Flask, render_template, request, redirect, session
 
@@ -22,8 +20,29 @@ RANDOM_KEY = "not Random" #TODO: Change this
 
 connected :bool = False
 
-# HTML Escape Chars
-replaceChars :dict = {'&':'&amp;', '"':'&#34;', '\'':'&#39;', '<':'&lt;', '>':'&gt;', 'ä':'&auml;', 'ö':'&ouml;', 'ü':'&uuml;', 'Ä':'&Auml;', 'Ö':'&Ouml;', 'Ü':'&Uuml;', 'ß':'&szlig;'}
+# HTML / Unicode Escape Chars
+# Add more if needed.
+replaceChars :dict = {
+                        '&':    '&amp;', 
+                        '"':    '&#34;', 
+                        '\'':   '&#39;', 
+                        '<':    '&lt;', 
+                        '>':    '&gt;', 
+                        '\\x84':'&auml;', # windows terminal problem 'ä'
+                        'ä':    '&auml;', 
+                        '\\x94':'&ouml', # windows terminal problem 'ö'
+                        'ö':    '&ouml;',
+                        '\\x81':'&uuml;', # windows terminal problem 'ü'
+                        'ü':    '&uuml;',
+                        '\\x8e':'&Auml;', # windows terminal problem 'Ä'
+                        'Ä':    '&Auml;',
+                        '\\x9a':'&Ouml', # windows terminal problem 'Ö'
+                        'Ö':    '&Ouml;',
+                        '\\x99':'&Uuml', # windows terminal problem 'Ü'
+                        'Ü':    '&Uuml;',
+                        '\\xe1':'&szlig', # windows terminal problem 'ß' 
+                        'ß':    '&szlig;'
+                    }
 
 
 flaskApp = Flask(__name__)
@@ -41,10 +60,8 @@ def index():
            jsonResult[str(counter)] = line
            counter += 1
         
-       # for item in jsonResult.items():
-        #    print(item)
-
-        #print(json.dumps(jsonResult))
+        for item in jsonResult.items():
+            print(item)
 
         return json.dumps(jsonResult, ensure_ascii=False)
 
@@ -69,14 +86,13 @@ async def execute(param:str) -> list:
 
 
     try:
-        processOutput = subprocess.run(param, stdout=subprocess.PIPE, shell=True, stderr=subprocess.PIPE, text=True, check=True, timeout=120) 
+        processOutput = subprocess.run(param, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True)
 
         # Output
         if(processOutput.stdout is not None):
-            
-            for line in processOutput.stdout.split("\n"):
-                result.append(await escape2HTML(line))
-            
+
+            for line in processOutput.stdout.decode('utf-8', 'backslashreplace').split("\n"):
+                result.append(await escape2HTML(line.strip('\r')))
         return result
 
     # Error-Channel
@@ -84,9 +100,9 @@ async def execute(param:str) -> list:
 
         print(f"Error: {error.args} --> StdError: {error.stderr}")
 
-        for line in error.stderr.split("\n"):
-            result.append(await escape2HTML(line))
-
+        for line in error.stderr.decode('utf-8', 'backslashreplace').split("\n"):
+            result.append(await escape2HTML(line.strip('\r')))
+        
         return result
 
 
@@ -96,10 +112,10 @@ async def execute(param:str) -> list:
 """
 async def escape2HTML(_inputString :str) -> str:
 
-    tempString :str
+    tempString :str = _inputString
 
     for key, value in replaceChars.items():
-        tempString = _inputString.replace(key , value)
+        tempString = tempString.replace(key , value)
 
     return tempString
 
