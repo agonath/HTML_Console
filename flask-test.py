@@ -109,6 +109,7 @@ async def execute(param:str) -> list:
 
 """
     Umlaute, Sonderzeichen ersetzen
+    TODO: Find a more efficient way
 """
 async def escape2HTML(_inputString :str) -> str:
 
