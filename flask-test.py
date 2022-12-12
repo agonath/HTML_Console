@@ -100,7 +100,7 @@ async def execute(param:str) -> list:
         # Output
         if(processOutput.stdout is not None):
 
-            for line in processOutput.stdout.decode('utf-8', 'backslashreplace').split("\n"):
+            for line in processOutput.stdout.decode('cp850', 'backslashreplace').split("\n"): # Todo Linux und Windows einzeln behandeln
                 result.append(await escape2HTML(line.strip('\r')))
         return result
 
@@ -123,6 +123,7 @@ async def execute(param:str) -> list:
 async def escape2HTML(_inputString :str) -> str:
 
     tempString :str = _inputString
+    print(f"Temp-String {tempString}")
 
     for key, value in replaceChars.items():
         tempString = tempString.replace(key , value)
