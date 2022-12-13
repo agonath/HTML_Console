@@ -19,9 +19,11 @@ Behaviour
 
 Missing/ Todos
 -----------------
-[CTRL+C] / [Crtl+V] - ist theoretical implemented, but due to browser restrictions not working. (need to work around)
-The "backend" needs real functionality.
-Some sort of web token based security must be added. (Json web token / JWT)
+[CTRL+C] - is working 
+[Crtl+V] - is not fully working.... (need to work around)
+- Some sort of web token based security must be added. (Json web token / JWT)
+- multi input handling
+- internal shell commands do not work (change directory...)
 
 Preconditions
 --------------
