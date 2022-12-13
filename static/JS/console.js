@@ -569,8 +569,8 @@ class MyConsole extends Object
 							case MESSAGES.RECEIVE:
 							{
 								console.log("Received message from backend : " + e.origin + " " + e.data.type + " " + e.data.data);
-								//this.printLine(e.data.data, "text info");
-								this.printJsonData(e.data.data, "text info");
+								this.printJsonData(e.data.data.info, "text info");
+								this.printJsonData(e.data.data.error, "text error");
 								break;
 							}
 
