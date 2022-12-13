@@ -5,6 +5,7 @@ import asyncio
 import time
 from urllib.request import Request
 import json
+#import webbrowser
 
 from flask import Flask, render_template, request, redirect, session
 
@@ -61,19 +62,9 @@ flaskApp = Flask(__name__)
 def index():
     if(request.method == 'POST'):
 
-        jsonResult : dict = {}
-
         result = asyncio.run(execFunc(request.json))
 
-        counter:int = 0
-        for line in result:
-           jsonResult[str(counter)] = line
-           counter += 1
-        
-        for item in jsonResult.items():
-            print(item)
-
-        return json.dumps(jsonResult, ensure_ascii=False)
+        return json.dumps(result, ensure_ascii=False)
 
     else:
         return render_template('index.html') 
@@ -87,37 +78,45 @@ def index():
     TODO: Im Moment keine Input-Nachfragen (interaktiv) möglich.
 
 """
-async def executeWindows(param:str) -> list:
+async def executeWindows(_param:str) -> dict:
 
     print("In Funktion execute Windows...")
 
-    result:list = []
+    result :dict = {"info": [], 'error': []}
     processOutput = None
-    cdFlag :bool = False
-
-    if(param.startswith("cd ")):
-        cdFlag=True
 
     try:
-        if(CHANGE_DIR == True and cdFlag == True):
-            pass #processOutput = TODO
+        if(_param == "cd .." or _param == "cd.."):
+            os.chdir(os.pardir)
+            result["info"].append(os.getcwd())
+        
+        elif(_param.startswith("cd ")):
+            os.chdir(_param[3:])
+            result["info"].append(os.getcwd())
+
         else:
-            processOutput = subprocess.run(param, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True, encoding="cp850")
+            processOutput = subprocess.run(_param, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True, encoding="cp850")
 
-        # Output
-        if(processOutput.stdout is not None):
+            # Output
+            if(processOutput.stdout is not None):
 
-            for line in processOutput.stdout.split("\n"):
-                result.append(await escape2HTML(line.strip('\r')))
+                for line in processOutput.stdout.split("\n"):
+                    result["info"].append(await escape2HTML(line.strip('\r')))
+        
         return result
 
-    # Error-Channel
+    # Error from cd
+    except(OSError) as error:
+        result["error"].append(error.strerror)
+        return result
+
+    # StdError-Channel
     except(subprocess.CalledProcessError) as error:
 
         print(f"Error: {error.args} --> StdError: {error.stderr}")
 
         for line in error.stderr.split("\n"):
-            result.append(await escape2HTML(line.strip('\r')))
+            result["error"].append(await escape2HTML(line.strip('\r')))
         
         return result
 
@@ -127,37 +126,46 @@ async def executeWindows(param:str) -> list:
     Führt das übergebene Kommando aus - Unix/Linux
 
 """
-async def executeUnix(param:str) -> list:
+async def executeUnix(_param:str) -> dict:
 
     print("In Funktion execute Windows...")
 
-    result:list = []
+    result :dict = {"info": [], 'error': []}
     processOutput = None
     cdFlag :bool = False
 
-    if(param.startswith("cd ")):
-        cdFlag=True
-
     try:
-        if(CHANGE_DIR == True and cdFlag == True):
-            pass #processOutput = TODO
+        if(_param == "cd .."):
+            os.chdir(os.pardir)
+            result["info"].append(os.getcwd())
+        
+        elif(_param.startswith("cd ")):
+            os.chdir(_param[3:])
+            result["info"].append(os.getcwd())
+
         else:
-            processOutput = subprocess.run(param, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True, encoding="utf-8")
+            processOutput = subprocess.run(_param, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True, encoding="utf-8")
 
-        # Output
-        if(processOutput.stdout is not None):
+            # Output
+            if(processOutput.stdout is not None):
 
-            for line in processOutput.stdout.split("\n"):#decode('cp850', 'backslashreplace').split("\n"): # Todo Linux und Windows einzeln behandeln
-                result.append(await escape2HTML(line))
+                for line in processOutput.stdout.split("\n"):
+                    result["info"].append(await escape2HTML(line))
+
         return result
 
-    # Error-Channel
+    # Error from cd
+    except(OSError) as error:
+        result["error"].append(error.strerror)
+        return result
+        
+    # StdError-Channel
     except(subprocess.CalledProcessError) as error:
 
         print(f"Error: {error.args} --> StdError: {error.stderr}")
 
         for line in error.stderr.split("\n"):
-            result.append(await escape2HTML(line))
+            result["error"].append(await escape2HTML(line))
         
         return result
 
@@ -194,3 +202,4 @@ if __name__ == "__main__":
 
     flaskApp.config.from_object(__name__)
     flaskApp.run(host="127.0.0.1", port="5000")
+    #webbrowser.open("http://127.0.0.1:5000")
