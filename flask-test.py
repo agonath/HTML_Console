@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import os
 import asyncio
 import time
 from urllib.request import Request
@@ -17,6 +18,12 @@ saveError = sys.stderr
 
 SECRET_KEY = "Super Duper Secret Key" #TODO: Change this, secret key to sign Flask's sessions
 RANDOM_KEY = "not Random" #TODO: Change this
+
+# OS selection
+WINDOWS :int = 1
+UNIX :int = 2
+currentOS = 1
+execFunc = None
 
 # Change directory allowed?
 CHANGE_DIR = True
@@ -56,7 +63,7 @@ def index():
 
         jsonResult : dict = {}
 
-        result = asyncio.run(execute(request.json))
+        result = asyncio.run(execFunc(request.json))
 
         counter:int = 0
         for line in result:
@@ -75,14 +82,14 @@ def index():
 
 
 """
-    Führt das übergebene Kommando aus.
+    Führt das übergebene Kommando aus. --- Windows
 
     TODO: Im Moment keine Input-Nachfragen (interaktiv) möglich.
 
 """
-async def execute(param:str) -> list:
+async def executeWindows(param:str) -> list:
 
-    print("In Funktion execute...")
+    print("In Funktion execute Windows...")
 
     result:list = []
     processOutput = None
@@ -95,12 +102,12 @@ async def execute(param:str) -> list:
         if(CHANGE_DIR == True and cdFlag == True):
             pass #processOutput = TODO
         else:
-            processOutput = subprocess.run(param, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True)
+            processOutput = subprocess.run(param, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True, encoding="cp850")
 
         # Output
         if(processOutput.stdout is not None):
 
-            for line in processOutput.stdout.decode('cp850', 'backslashreplace').split("\n"): # Todo Linux und Windows einzeln behandeln
+            for line in processOutput.stdout.split("\n"):
                 result.append(await escape2HTML(line.strip('\r')))
         return result
 
@@ -109,11 +116,50 @@ async def execute(param:str) -> list:
 
         print(f"Error: {error.args} --> StdError: {error.stderr}")
 
-        for line in error.stderr.decode('utf-8', 'backslashreplace').split("\n"):
+        for line in error.stderr.split("\n"):
             result.append(await escape2HTML(line.strip('\r')))
         
         return result
 
+
+"""
+
+    Führt das übergebene Kommando aus - Unix/Linux
+
+"""
+async def executeUnix(param:str) -> list:
+
+    print("In Funktion execute Windows...")
+
+    result:list = []
+    processOutput = None
+    cdFlag :bool = False
+
+    if(param.startswith("cd ")):
+        cdFlag=True
+
+    try:
+        if(CHANGE_DIR == True and cdFlag == True):
+            pass #processOutput = TODO
+        else:
+            processOutput = subprocess.run(param, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True, encoding="utf-8")
+
+        # Output
+        if(processOutput.stdout is not None):
+
+            for line in processOutput.stdout.split("\n"):#decode('cp850', 'backslashreplace').split("\n"): # Todo Linux und Windows einzeln behandeln
+                result.append(await escape2HTML(line))
+        return result
+
+    # Error-Channel
+    except(subprocess.CalledProcessError) as error:
+
+        print(f"Error: {error.args} --> StdError: {error.stderr}")
+
+        for line in error.stderr.split("\n"):
+            result.append(await escape2HTML(line))
+        
+        return result
 
 
 """
@@ -135,5 +181,16 @@ async def escape2HTML(_inputString :str) -> str:
 
 if __name__ == "__main__":
     #sys.argv --> Parameter
+
+    # Select the correct Exec-Funktion for the current used OS.
+    if(os.name== "nt"):
+        currentOS = WINDOWS
+        execFunc = executeWindows
+
+    elif(os.name == "posix"):
+        currentOS = UNIX
+        execFunc = executeUnix
+    
+
     flaskApp.config.from_object(__name__)
     flaskApp.run(host="127.0.0.1", port="5000")
