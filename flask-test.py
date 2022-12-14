@@ -26,6 +26,20 @@ UNIX :int = 2
 currentOS = 1
 execFunc = None
 
+# Process info struct
+class Process():
+    name :str = ""
+    pid :int = 0
+    proc :subprocess.Popen = None
+    running :bool = False
+    result :dict = {"info":[], "error":[]}
+
+
+
+# process list
+processList :dict = {}
+
+
 # Change directory allowed?
 CHANGE_DIR = True
 
@@ -56,34 +70,51 @@ replaceChars :dict = {
                     }
 
 
-flaskApp = Flask(__name__)
 
-@flaskApp.route("/", methods=['GET', 'POST'])
-def index():
-    if(request.method == 'POST'):
+"""
+    Holt alle Ausgaben eines Prozess ab.
+"""
+async def getProcessInformation(_process :subprocess.Popen):
+    
+    result :dict = {"info":[], "error":[]}
 
-        result = asyncio.run(execFunc(request.json))
+    # get pipe values
+    stdout, stderror = _process.communicate(_process.stdin);
+    # check und collect results
+    
+    for line in stdout.split("\n"):
+        result["info"].append(await escape2HTML(line.strip('\r')))
 
-        return json.dumps(result, ensure_ascii=False)
-
-    else:
-        return render_template('index.html') 
+    for line in stderror.split("\n"):
+        result["error"].append(await escape2HTML(line.strip('\r')))
+    
+    return result
 
 
 
 
 """
+    TODO
+
     Führt das übergebene Kommando aus. --- Windows
 
     TODO: Im Moment keine Input-Nachfragen (interaktiv) möglich.
 
 """
-async def executeWindows(_param:str) -> dict:
+async def executeWindows_2(_param:str, _name:str) -> dict:
 
-    print("In Funktion execute Windows...")
+    print("In Funktion execute Windows 2 neue Version...")
 
-    result :dict = {"info": [], 'error': []}
-    processOutput = None
+    if(processList.get(_name) != None):
+        # prozess existiert noch, mit diesem weitermachen
+        pass
+    else:
+        # neuen prozess anlegen
+        pass
+
+
+    result :dict = None
+    #process = None
 
     try:
         if(_param == "cd .." or _param == "cd.."):
@@ -95,12 +126,62 @@ async def executeWindows(_param:str) -> dict:
             result["info"].append(os.getcwd())
 
         else:
-            processOutput = subprocess.run(_param, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True, encoding="cp850")
-
+            processList[_name] = subprocess.Popen(_param, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True, encoding="cp850")
+            print(f"Name: {_name} Prozess: {processList[_name]}")
             # Output
-            if(processOutput.stdout is not None):
+            if(processList[_name].stdout is not None):
 
-                for line in processOutput.stdout.split("\n"):
+                for line in processList[_name].stdout.split("\n"):
+                    result["info"].append(await escape2HTML(line.strip('\r')))
+        
+        return result
+
+    # Error from cd
+    except(OSError) as error:
+        result["error"].append(error.strerror)
+        return result
+
+    # StdError-Channel
+    except(subprocess.CalledProcessError) as error:
+
+        print(f"Error: {error.args} --> StdError: {error.stderr}")
+
+        for line in error.stderr.split("\n"):
+            result["error"].append(await escape2HTML(line.strip('\r')))
+        
+        return result
+
+
+
+"""
+    Führt das übergebene Kommando aus. --- Windows
+
+    TODO: Im Moment keine Input-Nachfragen (interaktiv) möglich.
+
+"""
+async def executeWindows(_param:str, _name:str) -> dict:
+
+    print("In Funktion execute Windows...")
+
+    result :dict = {"info": [], 'error': []}
+    process = None
+
+    try:
+        if(_param == "cd .." or _param == "cd.."):
+            os.chdir(os.pardir)
+            result["info"].append(os.getcwd())
+        
+        elif(_param.startswith("cd ")):
+            os.chdir(_param[3:])
+            result["info"].append(os.getcwd())
+
+        else:
+            process = subprocess.run(_param, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True, encoding="cp850")
+            
+            # Output
+            if(process.stdout is not None):
+
+                for line in process.stdout.split("\n"):
                     result["info"].append(await escape2HTML(line.strip('\r')))
         
         return result
@@ -144,7 +225,7 @@ async def executeUnix(_param:str) -> dict:
             result["info"].append(os.getcwd())
 
         else:
-            processOutput = subprocess.run(_param, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True, encoding="utf-8")
+            processOutput = subprocess.run(_param, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True, encoding="utf-8")
 
             # Output
             if(processOutput.stdout is not None):
@@ -186,7 +267,28 @@ async def escape2HTML(_inputString :str) -> str:
 
 
 
+"""
+    Flask entry point
+"""
 
+flaskApp = Flask(__name__)
+
+@flaskApp.route("/", methods=['GET', 'POST'])
+def index():
+    if(request.method == 'POST'):
+
+        result = asyncio.run(execFunc(request.json, request.json.split(' ')[0])) # Name = alles bis zu ersten Leerzeichen (der aufgerufene Befehl)
+
+        return json.dumps(result, ensure_ascii=False)
+
+    else:
+        return render_template('index.html') 
+
+
+
+"""
+    Main entry point
+"""
 if __name__ == "__main__":
     #sys.argv --> Parameter
 
