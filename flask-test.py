@@ -6,6 +6,7 @@ import time
 from urllib.request import Request
 import json
 #import webbrowser
+from shlex import quote
 
 from flask import Flask, render_template, request, redirect, session
 
@@ -33,6 +34,10 @@ class Process():
     proc :subprocess.Popen = None
     running :bool = False
     result :dict = {"info":[], "error":[]}
+
+
+    def Process(self, _name :str):
+        self.name = _name
 
 
 
@@ -70,6 +75,12 @@ replaceChars :dict = {
                     }
 
 
+escapeChars :dict = {
+                        '\\': '\\\\',
+                        '"': '\\\"',
+                        '\'': '\\\''
+}
+
 
 """
     Holt alle Ausgaben eines Prozess ab.
@@ -106,10 +117,13 @@ async def executeWindows_2(_param:str, _name:str) -> dict:
     print("In Funktion execute Windows 2 neue Version...")
 
     if(processList.get(_name) != None):
-        # prozess existiert noch, mit diesem weitermachen
+        # Prozess existiert noch, mit diesem weitermachen
+
         pass
     else:
         # neuen prozess anlegen
+        processList[_name].proc = subprocess.Popen(_param, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True, encoding="cp850")
+        processList[_name].running = True
         pass
 
 
@@ -176,7 +190,8 @@ async def executeWindows(_param:str, _name:str) -> dict:
             result["info"].append(os.getcwd())
 
         else:
-            process = subprocess.run(_param, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True, encoding="cp850")
+            p :str = await escapeWindows(_param)
+            process = subprocess.run(p, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True, encoding="cp850")
             
             # Output
             if(process.stdout is not None):
@@ -225,7 +240,7 @@ async def executeUnix(_param:str) -> dict:
             result["info"].append(os.getcwd())
 
         else:
-            processOutput = subprocess.run(_param, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True, encoding="utf-8")
+            processOutput = subprocess.run(quote(_param), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True, encoding="utf-8")
 
             # Output
             if(processOutput.stdout is not None):
@@ -258,12 +273,23 @@ async def executeUnix(_param:str) -> dict:
 async def escape2HTML(_inputString :str) -> str:
 
     tempString :str = _inputString
-    print(f"Temp-String {tempString}")
 
     for key, value in replaceChars.items():
         tempString = tempString.replace(key , value)
 
     return tempString
+
+"""
+"""
+async def escapeWindows(_inputString :str) -> str:
+
+    tempString :str = _inputString
+
+    for key, value in escapeChars.items():
+        tempString = tempString.replace(key , value)
+
+    return tempString
+
 
 
 
@@ -277,6 +303,7 @@ flaskApp = Flask(__name__)
 def index():
     if(request.method == 'POST'):
 
+        print(f"Json sent: {request.json}")
         result = asyncio.run(execFunc(request.json, request.json.split(' ')[0])) # Name = alles bis zu ersten Leerzeichen (der aufgerufene Befehl)
 
         return json.dumps(result, ensure_ascii=False)
