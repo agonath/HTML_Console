@@ -7,11 +7,14 @@ from urllib.request import Request
 import json
 #import webbrowser
 from shlex import quote
+import secrets
 
 from flask import Flask, render_template, request, redirect, session
 
 #_cwd = dirname(abspath(__file__))
 
+# active user list
+activeUserList :dict = {}
 
  # save the system streams
 saveOut = sys.stdout
@@ -19,7 +22,7 @@ saveIn = sys.stdin
 saveError = sys.stderr
 
 SECRET_KEY = "Super Duper Secret Key" #TODO: Change this, secret key to sign Flask's sessions
-RANDOM_KEY = "not Random" #TODO: Change this
+RANDOM_VALUE = secrets.token_urlsafe(32)
 
 # OS selection
 WINDOWS :int = 1
@@ -118,6 +121,7 @@ async def executeWindows_2(_param:str, _name:str) -> dict:
 
     if(processList.get(_name) != None):
         # Prozess existiert noch, mit diesem weitermachen
+        processList[_name]
 
         pass
     else:
@@ -280,6 +284,7 @@ async def escape2HTML(_inputString :str) -> str:
     return tempString
 
 """
+    Umlaute, Sonderzeichen ersetzen - Windows
 """
 async def escapeWindows(_inputString :str) -> str:
 
@@ -294,13 +299,13 @@ async def escapeWindows(_inputString :str) -> str:
 
 
 """
-    Flask entry point
+    Web-Console, Befehle ausführen
 """
 
 flaskApp = Flask(__name__)
 
-@flaskApp.route("/", methods=['GET', 'POST'])
-def index():
+@flaskApp.route("/console", methods=['GET', 'POST'])
+def webConsole():
     if(request.method == 'POST'):
 
         print(f"Json sent: {request.json}")
@@ -308,8 +313,20 @@ def index():
 
         return json.dumps(result, ensure_ascii=False)
 
+
+
+"""
+    Login für die Console erledigen.
+    Flask entry point
+"""
+@flaskApp.route("/", methods=['GET', 'POST'])
+def webConsole():
+    if(request.method == 'POST'):
+
+       #TODO: Login hier machen
+
     else:
-        return render_template('index.html') 
+        return render_template('login.html')
 
 
 

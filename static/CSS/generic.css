@@ -4,6 +4,8 @@
 	box-sizing:border-box;
 }
 
+*:focus {outline:none !important}
+
 :root{
 	--textColor:rgb(243, 140, 26);
 	--textBackgroundColor: rgb(30,30,30);
@@ -23,13 +25,46 @@ body{
 	min-width:100%;
 	min-height:100%;
 }
+
+
+.margin_1em
+{
+	margin: 1em;
+}
+
+.margin_5px
+{
+	margin:5px;
+}
+
+.width_50
+{	width: 50%; }
+
+.width_100
+{	width:100%; }
+
+.width_33
+{	width:33%; }
+
+
+.flex{
+	display:flex;
+}
 		
-.flex-container{
+.flex-container-row{
 	display:flex;
 	flex: 1 100%;
 	flex-direction: row;
 	align-items: stretch;
 }
+
+.flex-container-col{
+	display:flex;
+	flex: 1 100%;
+	flex-direction:column;
+	align-items: stretch;
+}
+
 
 .flex-center-left{
 	justify-content:start;
@@ -66,6 +101,13 @@ body{
 	align-items: end;
 }
 
+
+.flex-wrapper_input input[type="text"] {
+	flex: 1 1 auto;
+  }
+
+
+
 #console {
 
 	color: var(--textColor);
@@ -80,6 +122,26 @@ body{
 /*pre#text{
 	font-family: "serif";
 }*/
+
+.login-text-label{
+	color:var(--textColor);
+	background-color: var(--textBackgroundColor);
+	font-size: large;
+}
+
+.login-input{
+	border: none;
+	border-bottom: 2px solid;
+	border-color: var(--infoColor);
+	background-color: var(--textBackgroundColor);
+}
+
+
+.input-element{
+	width:100%;
+	margin:10px 0;
+	padding:10px;
+}
 
 .text{
 	white-space: pre;
