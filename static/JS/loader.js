@@ -50,21 +50,19 @@ class Loader extends Object
 
         let response = await fetch(_server, payload);
 
-        this.receiveData(response.status);
-        this.receiveData(await response.json(), response.type);
-
-       return;
+        console.log("ReceiveData -> response.status: " + response.status);
+        this.receiveData(await response.json(), response.type, response.status);
     }
 
 
     // TODO
     // Send results from server to console.
     //
-    receiveData(_data, _type)
+    receiveData(_data, _type, _status)
     {
-        let msg = {type:MESSAGES.RECEIVE, data:_data};
+        let msg = {type:MESSAGES.RECEIVE, data:_data, status:_status};
+        window.postMessage(msg); // TODO check origin
         console.log("In sendResultTo Console mit Nachricht: " + msg + " und Daten: " + JSON.stringify(_data));
-        window.postMessage(msg);
     }
 
     // Event handler -- not used at the moment

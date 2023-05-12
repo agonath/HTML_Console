@@ -523,12 +523,20 @@ class MyConsole extends Object
 
 
 	/*
-		Print JSON data to console, update the line counter.
+		Print JSON data to console, update the line counter. --> TODO
 	*/
-	printJsonData(_json, _cssClassName="")
+	printJsonData(_jsonData, _cssClassName="")
 	{
-		console.table(_json);
-		Object.keys(_json).forEach(key => this.printLine(_json[key], _cssClassName));
+		console.log("In \"printJsonData\" --> Tabelle:");
+		console.table(_jsonData); // debug
+		
+		// Array
+		if(_jsonData.length && Array.isArray(_jsonData))
+		{	_jsonData.forEach(element => this.printLine(element, _cssClassName)); }
+		
+		// Dict
+		else if(_jsonData.length && typeof(_jsonData) === "object")
+		{	_json.keys().forEach(key => this.printLine(_json[key], _cssClassName)); }
 	}
 
 
@@ -568,8 +576,8 @@ class MyConsole extends Object
 
 							case MESSAGES.RECEIVE:
 							{
-								console.log("Received message from backend : " + e.origin + " " + e.data.type + " " + e.data.data);
-								this.printJsonData(e.data.data.info, "text info");
+								console.log("Received message from backend --> Origin: " + e.origin + " Type: " + e.data.type + " Data: " + e.data.data);
+								this.printJsonData(e.data.data, "text info");
 								this.printJsonData(e.data.data.error, "text error");
 								break;
 							}
