@@ -61,6 +61,7 @@ if __name__ == "__main__":
         currentOS = UNIX
         execFunc = executeUnix
 
+    # register own commands....
     registerCommand("cd", cd)
     registerCommand("cd..", cd) # should also work
     
