@@ -206,7 +206,7 @@ async def executeWindows_2(_param:str, _name:str) -> dict:
     TODO: Im Moment keine Input-Nachfragen (interaktiv) möglich.
 
 """
-async def executeWindows(_param:str) -> dict:
+async def executeWindows(_param:str, _name:str) -> dict:
 
     print("In Funktion execute Windows...")
 
@@ -214,29 +214,21 @@ async def executeWindows(_param:str) -> dict:
     process = None
 
     try:
-        if(_param == "cd .." or _param == "cd.."):
-            os.chdir(os.pardir)
-            result["info"].append(os.getcwd())
-        
-        elif(_param.startswith("cd ")):
-            os.chdir(_param[3:])
-            result["info"].append(os.getcwd())
 
-        else:
+        try:
+            # known command
+            await commandList[_name](_param, result);
+        
+        except LookupError:
+            # everthing else                                
             p :str = await escapeWindows(_param)
             process = subprocess.run(p, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True, encoding="cp850")
             
             # Output
             if(process.stdout is not None):
-
                 for line in process.stdout.split("\n"):
                     result["info"].append(await escape2HTML(line.strip('\r')))
         
-        return result
-
-    # Error from cd
-    except(OSError) as error:
-        result["error"].append(error.strerror)
         return result
 
     # StdError-Channel
@@ -255,7 +247,7 @@ async def executeWindows(_param:str) -> dict:
     Führt das übergebene Kommando aus - Unix/Linux
 
 """
-async def executeUnix(_param:str) -> dict:
+async def executeUnix(_param:str, _name:str) -> dict:
 
     print("In Funktion execute Windows...")
 
@@ -264,28 +256,19 @@ async def executeUnix(_param:str) -> dict:
     cdFlag :bool = False
 
     try:
-        if(_param == "cd .."):
-            os.chdir(os.pardir)
-            result["info"].append(os.getcwd())
+        try:
+            # known command
+            await commandList[_name](_param, result);
         
-        elif(_param.startswith("cd ")):
-            os.chdir(_param[3:])
-            result["info"].append(os.getcwd())
-
-        else:
+        except LookupError:
+            # everthing else
             processOutput = subprocess.run(quote(_param), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, check=True, timeout=120, shell=True, encoding="utf-8")
 
             # Output
             if(processOutput.stdout is not None):
-
                 for line in processOutput.stdout.split("\n"):
                     result["info"].append(await escape2HTML(line))
 
-        return result
-
-    # Error from cd
-    except(OSError) as error:
-        result["error"].append(error.strerror)
         return result
         
     # StdError-Channel
