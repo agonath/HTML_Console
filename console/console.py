@@ -71,7 +71,7 @@ escapeChars :dict = {
     Umlaute, Sonderzeichen ersetzen
     TODO: Find a more efficient way
 """
-async def escape2HTML(_inputString :str) -> str:
+def escape2HTML(_inputString :str) -> str:
 
     tempString :str = _inputString
 
@@ -142,7 +142,7 @@ async def getProcessInformation(_process :subprocess.Popen):
     TODO: Im Moment keine Input-Nachfragen (interaktiv) möglich.
 
 """
-async def executeWindows_2(_param:str, _name:str) -> dict:
+def executeWindows_2(_param:str, _name:str) -> dict:
 
     print("In Funktion execute Windows 2 neue Version...")
 
@@ -177,7 +177,7 @@ async def executeWindows_2(_param:str, _name:str) -> dict:
             if(processList[_name].stdout is not None):
 
                 for line in processList[_name].stdout.split("\n"):
-                    result["info"].append(await escape2HTML(line.strip('\r')))
+                    result["info"].append(escape2HTML(line.strip('\r')))
         
         return result
 
@@ -192,7 +192,7 @@ async def executeWindows_2(_param:str, _name:str) -> dict:
         print(f"Error: {error.args} --> StdError: {error.stderr}")
 
         for line in error.stderr.split("\n"):
-            result["error"].append(await escape2HTML(line.strip('\r')))
+            result["error"].append(escape2HTML(line.strip('\r')))
         
         return result
 
@@ -218,6 +218,7 @@ async def executeWindows(_param:str, _name:str) -> dict:
         try:
             # known command
             await commandList[_name](_param, result);
+            return result
         
         except LookupError:
             # everthing else                                
@@ -227,9 +228,9 @@ async def executeWindows(_param:str, _name:str) -> dict:
             # Output
             if(process.stdout is not None):
                 for line in process.stdout.split("\n"):
-                    result["info"].append(await escape2HTML(line.strip('\r')))
+                    result["info"].append(escape2HTML(line.strip('\r')))
         
-        return result
+            return result
 
     # StdError-Channel
     except(subprocess.CalledProcessError) as error:
@@ -237,7 +238,7 @@ async def executeWindows(_param:str, _name:str) -> dict:
         print(f"Error: {error.args} --> StdError: {error.stderr}")
 
         for line in error.stderr.split("\n"):
-            result["error"].append(await escape2HTML(line.strip('\r')))
+            result["error"].append(escape2HTML(line.strip('\r')))
         
         return result
 
@@ -259,6 +260,7 @@ async def executeUnix(_param:str, _name:str) -> dict:
         try:
             # known command
             await commandList[_name](_param, result);
+            return result
         
         except LookupError:
             # everthing else
@@ -267,9 +269,9 @@ async def executeUnix(_param:str, _name:str) -> dict:
             # Output
             if(processOutput.stdout is not None):
                 for line in processOutput.stdout.split("\n"):
-                    result["info"].append(await escape2HTML(line))
+                    result["info"].append(escape2HTML(line))
 
-        return result
+            return result
         
     # StdError-Channel
     except(subprocess.CalledProcessError) as error:
@@ -277,6 +279,6 @@ async def executeUnix(_param:str, _name:str) -> dict:
         print(f"Error: {error.args} --> StdError: {error.stderr}")
 
         for line in error.stderr.split("\n"):
-            result["error"].append(await escape2HTML(line))
+            result["error"].append(escape2HTML(line))
         
         return result
