@@ -11,6 +11,7 @@ import secrets
 from flask import Flask, render_template, request, redirect, session
 # console stuff
 from console.console import *
+from console.cd import *
 
 #_cwd = dirname(abspath(__file__))
 
@@ -33,7 +34,7 @@ RANDOM_VALUE = secrets.token_urlsafe(32)
 
 flaskApp = Flask(__name__)
 
-@flaskApp.route("/console", methods=['GET', 'POST'])
+@flaskApp.route("/", methods=['GET', 'POST'])
 def webConsole():
     if(request.method == 'POST'):
 
@@ -41,24 +42,9 @@ def webConsole():
         result = asyncio.run(execFunc(request.json, request.json.split(' ')[0])) # Name = alles bis zu ersten Leerzeichen (der aufgerufene Befehl)
 
         return json.dumps(result, ensure_ascii=False)
-
-
-
-"""
-    Login für die Console erledigen.
-    Flask entry point
-"""
-"""
-@flaskApp.route("/", methods=['GET', 'POST'])
-def webConsole():
-    if(request.method == 'POST'):
-
-       #TODO: Login hier machen
-
     else:
-        return render_template('login.html')
+        return render_template('console.html')
 
-"""
 
 """
     Main entry point
@@ -74,6 +60,9 @@ if __name__ == "__main__":
     elif(os.name == "posix"):
         currentOS = UNIX
         execFunc = executeUnix
+
+    registerCommand("cd", cd)
+    registerCommand("cd..", cd) # should also work
     
 
     flaskApp.config.from_object(__name__)
