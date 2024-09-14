@@ -1,5 +1,8 @@
 "use strict";
 
+// Enum for possible messages.
+const enum MESSAGES { NONE=0, UPDATE=1, CLS=2, SEND=3, RECEIVE=4 };
+
 //
 // TODO class for receive and send messages to server
 // This version is just for demo....
@@ -7,6 +10,9 @@
 
 class Loader extends Object
 {
+    private result :string;
+    private allowedServers :string[];
+
     constructor(_serverAddr=["127.0.0.1:80"])
     {
         super();
@@ -39,9 +45,9 @@ class Loader extends Object
     //
     //
     //
-    async sendData(_server, _data, _method='POST')
+    public async sendData(_server, _data, _method :string ='POST')
     {
-        let payload = {
+        let payload :RequestInit = {
                         method: _method,
                         cache: 'no-cache',
                         headers: {'Content-Type':'application/json;charset=utf-8'},
@@ -58,7 +64,7 @@ class Loader extends Object
     // TODO
     // Send results from server to console.
     //
-    receiveData(_data, _type, _status)
+    public async receiveData(_data, _type :ResponseType, _status :number)
     {
         let msg = {type:MESSAGES.RECEIVE, data:_data, status:_status};
         window.postMessage(msg); // TODO check origin
