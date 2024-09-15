@@ -4,7 +4,7 @@
 // TODO class for receive and send messages to server
 // This version is just for demo....
 // 
-export class Loader extends Object {
+class Loader extends Object {
     result;
     allowedServers;
     constructor(_serverAddrArray = ["127.0.0.1:80"]) {
@@ -27,6 +27,7 @@ export class Loader extends Object {
                 return true;
             }
         }
+        console.log(`URL: ${_url} is not allowed`);
         return false;
     }
     //

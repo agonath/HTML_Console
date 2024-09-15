@@ -1,4 +1,5 @@
 "use strict";
+import { Loader } from "./loader";
 const VERSION_MAJOR = '0';
 const VERSION_MINOR = '3';
 const VERSION_MICRO = '1';

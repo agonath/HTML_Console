@@ -27,6 +27,7 @@ export class Loader extends Object {
                 return true;
             }
         }
+        console.log(`URL: ${_url} is not allowed`);
         return false;
     }
     //
