@@ -48,6 +48,8 @@ export class Loader extends Object
                 if( this.allowedServers[entry].host === _url)
                 { return true; }
             }
+        
+        console.log(`URL: ${_url} is not allowed`);
         return false;
     }
 
