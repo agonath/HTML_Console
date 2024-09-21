@@ -20,7 +20,7 @@ const LOCAL_ADDR_SSL = "https://127.0.0.1:5443";
 
 
 
-class MyConsole extends Object
+export default class MyConsole extends Object
 {
 	lineCounter: number;
 	cursorPosition: number;
@@ -969,8 +969,34 @@ class MyConsole extends Object
 	//
 	_handleBackspace(_e :KeyboardEvent, _textNode :HTMLElement)
 	{
-		this._removeCharsFromBuffer();
-		//console.log("Textzeile nach Backspace: " + this.consoleBuffer);
+		switch(this.selectionActive)
+		{
+			case true:
+			{
+				if(this.selectionStartPos > this.cursorPosition)
+				{
+					// Selected text is after the current cursor position, on the right side
+					const len = this.selectionStartPos - this.selectionEndPos;
+					console.log(`Length selected text: ${len}`);
+					this._removeCharsFromBuffer(len, true);
+				}
+				else
+				{
+					// Selected text is in front of the current cursor position, on the left side
+					const len = this.selectionEndPos - this.selectionStartPos;
+					console.log(`Length selected text: ${len}`);
+					this._removeCharsFromBuffer(len, false);
+				}
+				break;
+			}
+
+			case false:
+			default:
+			{
+				this._removeCharsFromBuffer();
+				//console.log("Textzeile nach Backspace: " + this.consoleBuffer);
+			}
+		}
 		
 		// cancel an active selection of text
 		this.selectionActive = false;
@@ -988,8 +1014,36 @@ class MyConsole extends Object
 	//
 	_handleDeleteKey(_e :KeyboardEvent, _textNode :HTMLElement)
 	{
-		this._removeCharsFromBuffer(1, true);
-		//console.log("Textzeile nach Entf: " + this.consoleBuffer);
+		switch(this.selectionActive)
+		{
+			case true:
+			{
+				if(this.selectionStartPos > this.cursorPosition)
+				{
+					// Selected text is after the current cursor position, on the right side
+					const len = this.selectionStartPos - this.selectionEndPos;
+					console.log(`Length selected text: ${len}`);
+					this._removeCharsFromBuffer(len, true);
+				}
+				else
+				{
+					// Selected text is in front of the current cursor position, on the left side
+					const len = this.selectionEndPos - this.selectionStartPos;
+					console.log(`Length selected text: ${len}`);
+					this._removeCharsFromBuffer(len, false);
+				}
+				break;
+			}
+
+			case false:
+			default:
+			{
+				this._removeCharsFromBuffer(1, true);
+				//console.log("Textzeile nach Entf: " + this.consoleBuffer);
+				break;
+			}
+		}
+		
 
 		// cancel an active selection of text
 		this.selectionActive = false;
