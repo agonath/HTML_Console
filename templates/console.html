@@ -5,13 +5,7 @@
 		<meta http-equiv="content-type" content="text/html; charset=utf-8">
 		<meta name="viewport" content="width=device-width, min-width=550px, initial-scale=1, user-scalable=no" /> 
         <link rel="stylesheet" href="../static/CSS/generic.css" />
-
-		<script src="../static/JS/console.js" ></script>
-		<script src="../static/JS/loader.js" ></script>
-		<script>
-		
-		</script>
-
+		<script type="module" src="../static/JS/console.js"></script>
 	</head>
 	<body id="main">
 	
@@ -19,7 +13,10 @@
 			<div id="text" class="text"><span id="cursor" class="cursor"></span></div>
 		</div>
 			
-		<script>
+		<script type="module">
+
+			import MyConsole from "../static/JS/console.js";
+
 			let con = new MyConsole();
 			console.log("Console: ", con);
 			con.init();

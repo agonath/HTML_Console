@@ -1,35 +1,42 @@
 "use strict";
-
+;
 //
 // TODO class for receive and send messages to server
 // This version is just for demo....
 // 
-
-class Loader extends Object
-{
-    constructor(_serverAddr=["127.0.0.1:80"])
-    {
+export class Loader extends Object {
+    result;
+    allowedServers;
+    constructor(_serverAddrArray = ["127.0.0.1:80"]) {
         super();
-        
-        this.result="";
-        this.allowedServers = _serverAddr;
-
-        // Debug
-        for(var x in this.allowedServers)
-        {   console.log(this.allowedServers[x]); }
+        this.result = "";
+        for (let x in _serverAddrArray.keys) {
+            if (URL.canParse(_serverAddrArray[x])) {
+                this.allowedServers.push(URL.parse(_serverAddrArray[x]));
+                // Debug
+                console.log(`Add server adress: ${this.allowedServers[x]}`);
+            }
+        }
     }
-
-
+    /*
+    * Helper, check if URL is in our allowed URLs list.
+    */
+    isURLAllowed(_url = "") {
+        for (let entry in this.allowedServers) {
+            if (this.allowedServers[entry].host === _url) {
+                return true;
+            }
+        }
+        console.log(`URL: ${_url} is not allowed`);
+        return false;
+    }
     //
     // Init stuff...
     //
-    init()
-    {
+    init() {
         //const self = this; // needed to keep the reference of this to our console class object
         //addEventListener("message", function(_e){ return self.handleEvent(_e);});
     }
-
-
     //
     // Send data to server using the fetch api.
     //
@@ -39,73 +46,34 @@ class Loader extends Object
     //
     //
     //
-    async sendData(_server, _data, _method='POST')
-    {
-        let payload = {
-                        method: _method,
-                        cache: 'no-cache',
-                        headers: {'Content-Type':'application/json;charset=utf-8'},
-                        body: JSON.stringify(_data)
-                      }
-
-        let response = await fetch(_server, payload);
-
-        console.log("ReceiveData -> response.status: " + response.status);
-        this.receiveData(await response.json(), response.type, response.status);
+    async sendData(_server, _data, _method = 'POST') {
+        // Check URL first
+        if (true === this.isURLAllowed(_server.host)) {
+            let payload = {
+                method: _method,
+                cache: 'no-cache',
+                headers: { 'Content-Type': 'application/json;charset=utf-8' },
+                body: JSON.stringify(_data)
+            };
+            let response = await fetch(_server, payload);
+            console.log("ReceiveData -> response.status: " + response.status);
+            this.receiveData(await response.json(), response.type, response.status, response.url);
+        }
     }
-
-
     // TODO
     // Send results from server to console.
     //
-    receiveData(_data, _type, _status)
-    {
-        let msg = {type:MESSAGES.RECEIVE, data:_data, status:_status};
-        window.postMessage(msg); // TODO check origin
-        console.log("In sendResultTo Console mit Nachricht: " + msg + " und Daten: " + JSON.stringify(_data));
-    }
-
-    // Event handler -- not used at the moment
- /*   handleEvent(_event)
-    {
-        switch(_event.type)
-        {
-            case 'message': //handle messages only -- 
-            {
-                let allowedOrigin = false;
-                for(var x in this.allowedServers)
-                {
-                    if(_event.origin.toLowerCase() === this.allowedServers[x])
-                    {   allowedOrigin = true; }
-                }
-        
-                // DEBUG
-                console.log("Origin in allowed servers: " + allowedOrigin + " origin: " + _event.origin);
-
-                switch(allowedOrigin)
-                {
-                    case (true):
-                    {
-                        switch(_event.data.type)
-                        {
-                            case MESSAGES.SEND:
-                            {
-                                console.log("Loader - Message received: " + _event.data.type + " " + _event.data.data);
-                                // Execute the input
-                                this.sendData(_event.origin, _event.data.data);                              
-                                break;
-                            }
-
-                            default:
-                            { return; }
-                        }
-                    }
-                }
-                break;
-            }// case 'message'
-
-            default:
-            {   return; }
+    async receiveData(_data, _type, _status, _url) {
+        // Check URL first
+        if (true === this.isURLAllowed(_url)) {
+            const msg = {
+                type: 4 /* MESSAGES.RECEIVE */,
+                data: _data,
+                status: _status
+            };
+            window.postMessage(msg, _url);
+            console.log(`In sendResultTo Console von URL: ${_url} mit Nachricht: ${msg} und Daten: ${JSON.stringify(_data)}`);
         }
-    } */
+    }
 }
+//# sourceMappingURL=loader.js.map
