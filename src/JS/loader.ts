@@ -18,7 +18,7 @@ export interface DATA_PCK {
 export class Loader extends Object
 {
     private result :string;
-    private allowedServers :URL[];
+    private allowedServers :URL[]=[];
 
     constructor(_serverAddrArray :string[]=["127.0.0.1:80"])
     {
@@ -26,14 +26,18 @@ export class Loader extends Object
         
         this.result="";
 
-        for(let x in _serverAddrArray.keys)
-        {   
-            if(URL.canParse(_serverAddrArray[x]))
+        for(const serverAddress of _serverAddrArray)
+        {
+            if(URL.canParse(serverAddress))
             {
-                this.allowedServers.push(URL.parse(_serverAddrArray[x]));
-                // Debug
-                console.log(`Add server adress: ${this.allowedServers[x]}`);
-            } 
+                const parsedServer = URL.parse(serverAddress);
+                if(parsedServer !== null)
+                {
+                    this.allowedServers.push(parsedServer);
+                    // Debug
+                    console.log(`Add server adress: ${parsedServer}`);
+                }
+            }
         }
     }
 
