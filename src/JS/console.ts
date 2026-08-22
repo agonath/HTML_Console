@@ -515,15 +515,15 @@ export default class MyConsole extends Object
 	//
 	// Print line to console, updates the line counter
 	//
-	// Parameter:	_text -> Text to be printed. (HTML possible, but can lead to unexpected results. (not tested))
+	// Parameter:	_text -> Text to be printed.
 	//				
 	//
-	printLine(_text :string, _cssClassName :string="")
+	printLine(_text :string, _cssClassName :string=""): void
 	{
 		// Set up new line content
-		let line :HTMLElement = document.createElement("DIV");
-		line.innerHTML = _text;
-		line.setAttribute("class", _cssClassName);
+		let line :HTMLElement = document.createElement("div");
+		line.textContent = _text;
+		line.className = _cssClassName;
 
 		//update line counter
 		this.lineCounter += 1;
@@ -534,6 +534,20 @@ export default class MyConsole extends Object
 		// Insert new line before the input line.
 		this.console.insertBefore(line, this.textNode);
 		this.textNode.scrollIntoView({block: "end"});
+	}
+
+	// Nur für bewusst erlaubtes HTML
+	printLineHtml(_html: string, _cssClassName: string = ""): void
+	{
+		const line = document.createElement("div");
+		line.innerHTML = _html;
+		line.className = _cssClassName;
+
+		this.lineCounter += 1;
+		line.id = this.lineCounter.toString();
+
+		this.console.insertBefore(line, this.textNode);
+		this.textNode.scrollIntoView({ block: "end" });
 	}
 
 
