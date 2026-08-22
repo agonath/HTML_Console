@@ -100,7 +100,7 @@ export class Loader extends Object
     // TODO
     // Send results from server to console.
     //
-    public async receiveData(_data, _type :ResponseType, _status :number, _url:string)
+    public async receiveData(_data :unknown, _type :ResponseType, _status :number, _url:string)
     {
         // Check URL first
         if(true === this.isURLAllowed(_url))
