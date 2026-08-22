@@ -61,9 +61,9 @@ export default class MyConsole extends Object
 		this.currentlyActiveHistoryLine = (this.history.length - 1); // Position counter by default points to the end of history
 		this.firstTimeHistoryUsedFlag = true; // Status flag for first time history usage, important for navigation through history
 		
-		this.textNode = document.getElementById("text");
-		this.cursorNode = document.getElementById("cursor");
-		this.console = document.getElementById("console");
+		this.textNode = document.getElementById("text") as HTMLElement;
+		this.cursorNode = document.getElementById("cursor") as HTMLElement;
+		this.console = document.getElementById("console") as HTMLElement;
 
 		this.consoleBuffer = ""; // content of the input line
 		this.setIntervalId = 0;
@@ -103,7 +103,7 @@ export default class MyConsole extends Object
 	//
 	init(_element = window)
 	{
-		if(typeof(_element) != undefined)
+		if(_element !== undefined)
 		{
 			// Register input handler
 			const self = this; // needed to keep the reference of this to our console class object
@@ -617,7 +617,11 @@ export default class MyConsole extends Object
                             {
                                 console.log("Got message, send to backend : " + e.origin + " " + e.data.type + " " + e.data.data);
                                 // Execute the input
-                                this.loader.sendData(URL.parse(e.origin), e.data.data);
+								const origin = URL.parse(e.origin);
+								if (origin !== null)
+								{
+									this.loader.sendData(origin, e.data.data);
+								}
 								break;
 							}
 						}
@@ -923,10 +927,16 @@ export default class MyConsole extends Object
 	{
 		this._clearConsoleLineBuffer();
 		
+		this.console
+			.querySelectorAll<HTMLElement>('.text:not(#text)')
+			.forEach(line => line.remove());
+
+		/* Das oben erst testen!
 		let lines :NodeListOf<Element> = document.querySelectorAll('.text:not(#text)'); // select all Elements with class = "text" and id != "text"
 		
 		for(let i=0; i<lines.length; i++)
 		{	this.console.firstElementChild.remove(); } // Later todo, find a better way to do this.
+		*/
 
 		this.lineCounter = 0;
 	}
@@ -941,7 +951,7 @@ export default class MyConsole extends Object
 		switch(this.consoleBuffer.length)
 		{
 			case 0:
-			{	return; }
+			{	return ""; }
 			
 			default:
 			{
