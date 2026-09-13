@@ -47,7 +47,7 @@ export default class MyConsole extends Object
 	private _selectedText: string;
 	private _afterCurAndSelection: string;
 
-	loader: Loader;
+	loader: Loader = new Loader([LOCAL_ADDR, LOCAL_ADDR_SSL]); //LOCALHOST, LOCALHOST_SSL]);
 
 	constructor(_element = window)
 	{
@@ -126,7 +126,8 @@ export default class MyConsole extends Object
 			//this.cmdWorker = new Worker("loader.js");
 			//this.cmdWorker.postMessage();
 			//console.log("Worker thread: " + this.cmdWorker);
-			this.loader = new Loader([LOCAL_ADDR, LOCAL_ADDR_SSL]); //LOCALHOST, LOCALHOST_SSL]);
+
+			//this.loader = new Loader([LOCAL_ADDR, LOCAL_ADDR_SSL]); //LOCALHOST, LOCALHOST_SSL]);
 			this.loader.init();
 
 			//console.log(window);
