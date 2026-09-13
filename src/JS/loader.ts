@@ -20,24 +20,22 @@ export class Loader extends Object
     private result :string;
     private allowedServers :URL[]=[];
 
-    constructor(_serverAddrArray :string[]=["127.0.0.1:80"])
+    constructor(_serverAddrArray :string[]=["127.0.0.1:5000"])
     {
         super();
-        
-        this.result="";
 
-        for(const serverAddress of _serverAddrArray)
-        {
-            if(URL.canParse(serverAddress))
+        for(let x of _serverAddrArray.keys())
+        {   console.log(`Server address: ${_serverAddrArray[x]}`);
+            if(URL.canParse(_serverAddrArray[x]))
             {
-                const parsedServer = URL.parse(serverAddress);
-                if(parsedServer !== null)
+                let url = URL.parse(_serverAddrArray[x]);
+                if(url !== null)
                 {
-                    this.allowedServers.push(parsedServer);
+                    this.allowedServers.push(url);
                     // Debug
-                    console.log(`Add server adress: ${parsedServer}`);
+                    console.log(`Add server adress: ${this.allowedServers[this.allowedServers.length - 1]}`);
                 }
-            }
+            } 
         }
     }
 
@@ -100,7 +98,7 @@ export class Loader extends Object
     // TODO
     // Send results from server to console.
     //
-    public async receiveData(_data :unknown, _type :ResponseType, _status :number, _url:string)
+    public async receiveData(_data: any, _type :ResponseType, _status :number, _url:string)
     {
         // Check URL first
         if(true === this.isURLAllowed(_url))
