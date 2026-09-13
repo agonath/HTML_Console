@@ -17,8 +17,8 @@ export interface DATA_PCK {
 
 export class Loader extends Object
 {
-    private result :string = "";
-    private allowedServers :URL[] = [];
+    private result :string;
+    private allowedServers :URL[]=[];
 
     constructor(_serverAddrArray :string[]=["127.0.0.1:5000"])
     {

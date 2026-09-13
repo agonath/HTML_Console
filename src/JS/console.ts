@@ -47,7 +47,7 @@ export default class MyConsole extends Object
 	private _selectedText: string;
 	private _afterCurAndSelection: string;
 
-	loader: Loader;
+	loader: Loader = new Loader([LOCAL_ADDR, LOCAL_ADDR_SSL]); //LOCALHOST, LOCALHOST_SSL]);
 
 	constructor(_element = window)
 	{
@@ -61,9 +61,9 @@ export default class MyConsole extends Object
 		this.currentlyActiveHistoryLine = (this.history.length - 1); // Position counter by default points to the end of history
 		this.firstTimeHistoryUsedFlag = true; // Status flag for first time history usage, important for navigation through history
 		
-		this.textNode = document.getElementById("text");
-		this.cursorNode = document.getElementById("cursor");
-		this.console = document.getElementById("console");
+		this.textNode = document.getElementById("text") as HTMLElement;
+		this.cursorNode = document.getElementById("cursor") as HTMLElement;
+		this.console = document.getElementById("console") as HTMLElement;
 
 		this.consoleBuffer = ""; // content of the input line
 		this.setIntervalId = 0;
@@ -103,7 +103,7 @@ export default class MyConsole extends Object
 	//
 	init(_element = window)
 	{
-		if(typeof(_element) != undefined)
+		if(_element !== undefined)
 		{
 			// Register input handler
 			const self = this; // needed to keep the reference of this to our console class object
@@ -126,7 +126,8 @@ export default class MyConsole extends Object
 			//this.cmdWorker = new Worker("loader.js");
 			//this.cmdWorker.postMessage();
 			//console.log("Worker thread: " + this.cmdWorker);
-			this.loader = new Loader([LOCAL_ADDR, LOCAL_ADDR_SSL]); //LOCALHOST, LOCALHOST_SSL]);
+
+			//this.loader = new Loader([LOCAL_ADDR, LOCAL_ADDR_SSL]); //LOCALHOST, LOCALHOST_SSL]);
 			this.loader.init();
 
 			//console.log(window);
@@ -515,15 +516,15 @@ export default class MyConsole extends Object
 	//
 	// Print line to console, updates the line counter
 	//
-	// Parameter:	_text -> Text to be printed. (HTML possible, but can lead to unexpected results. (not tested))
+	// Parameter:	_text -> Text to be printed.
 	//				
 	//
-	printLine(_text :string, _cssClassName :string="")
+	printLine(_text :string, _cssClassName :string=""): void
 	{
 		// Set up new line content
-		let line :HTMLElement = document.createElement("DIV");
-		line.innerHTML = _text;
-		line.setAttribute("class", _cssClassName);
+		let line :HTMLElement = document.createElement("div");
+		line.textContent = _text;
+		line.className = _cssClassName;
 
 		//update line counter
 		this.lineCounter += 1;
@@ -534,6 +535,20 @@ export default class MyConsole extends Object
 		// Insert new line before the input line.
 		this.console.insertBefore(line, this.textNode);
 		this.textNode.scrollIntoView({block: "end"});
+	}
+
+	// Nur für bewusst erlaubtes HTML
+	printLineHtml(_html: string, _cssClassName: string = ""): void
+	{
+		const line = document.createElement("div");
+		line.innerHTML = _html;
+		line.className = _cssClassName;
+
+		this.lineCounter += 1;
+		line.id = this.lineCounter.toString();
+
+		this.console.insertBefore(line, this.textNode);
+		this.textNode.scrollIntoView({ block: "end" });
 	}
 
 
@@ -603,7 +618,11 @@ export default class MyConsole extends Object
                             {
                                 console.log("Got message, send to backend : " + e.origin + " " + e.data.type + " " + e.data.data);
                                 // Execute the input
-                                this.loader.sendData(URL.parse(e.origin), e.data.data);
+								const origin = URL.parse(e.origin);
+								if (origin !== null)
+								{
+									this.loader.sendData(origin, e.data.data);
+								}
 								break;
 							}
 						}
@@ -909,10 +928,16 @@ export default class MyConsole extends Object
 	{
 		this._clearConsoleLineBuffer();
 		
+		this.console
+			.querySelectorAll<HTMLElement>('.text:not(#text)')
+			.forEach(line => line.remove());
+
+		/* Das oben erst testen!
 		let lines :NodeListOf<Element> = document.querySelectorAll('.text:not(#text)'); // select all Elements with class = "text" and id != "text"
 		
 		for(let i=0; i<lines.length; i++)
 		{	this.console.firstElementChild.remove(); } // Later todo, find a better way to do this.
+		*/
 
 		this.lineCounter = 0;
 	}
@@ -927,7 +952,7 @@ export default class MyConsole extends Object
 		switch(this.consoleBuffer.length)
 		{
 			case 0:
-			{	return; }
+			{	return ""; }
 			
 			default:
 			{
