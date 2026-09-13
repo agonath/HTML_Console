@@ -65,7 +65,47 @@ if __name__ == "__main__":
     registerCommand("cd", cd)
     registerCommand("cd..", cd) # should also work
     
+    running: bool = True
+    result:dict = {}
+    inputSTR :str
 
     flaskApp.config.from_object(__name__)
     flaskApp.run(host="127.0.0.1", port="5000")
     #webbrowser.open("http://127.0.0.1:5000")
+"""
+    while(running):
+        inputSTR = input()
+        
+        if(len(inputSTR) > 0):
+
+            name:str = inputSTR.split()[0]
+            print(f"Running [{name}]")
+
+            if(inputSTR.lower() == "exit"):
+                running=False
+            else:
+                """
+"""                result = runCMD(inputSTR, name)
+                print(result)
+                print(f"Prozess: {processList[name].name} - {processList[name].running}\n")
+                
+                for item in processList.values():
+                    print(f"aktueller Prozess: {item}\n")
+                    if(item.running==False):
+                        processList[item.name].pop()
+                    else:
+                        result = getProcessInformation(processList[item.name]).result
+                        print(result)
+                        """
+"""                proc, result = simpleCmdExec(inputSTR)
+                
+                print(result)
+                
+                if(proc == None):
+                    continue
+
+                while(proc.poll() == None):
+                    #stdout, stderr = proc.communicate(str(proc.stdin))
+                    getProcessInformationUpdate(proc, result)
+                    print(result)
+ """
