@@ -72,7 +72,7 @@ if __name__ == "__main__":
     flaskApp.config.from_object(__name__)
     flaskApp.run(host="127.0.0.1", port="5000")
     #webbrowser.open("http://127.0.0.1:5000")
-"""
+
     while(running):
         inputSTR = input()
         
@@ -84,8 +84,8 @@ if __name__ == "__main__":
             if(inputSTR.lower() == "exit"):
                 running=False
             else:
-                """
-"""                result = runCMD(inputSTR, name)
+                
+                result = runCMD(inputSTR, name)
                 print(result)
                 print(f"Prozess: {processList[name].name} - {processList[name].running}\n")
                 
@@ -96,8 +96,8 @@ if __name__ == "__main__":
                     else:
                         result = getProcessInformation(processList[item.name]).result
                         print(result)
-                        """
-"""                proc, result = simpleCmdExec(inputSTR)
+                        
+                proc, result = simpleCmdExec(inputSTR)
                 
                 print(result)
                 
@@ -108,4 +108,4 @@ if __name__ == "__main__":
                     #stdout, stderr = proc.communicate(str(proc.stdin))
                     getProcessInformationUpdate(proc, result)
                     print(result)
- """
+ 

@@ -17,15 +17,15 @@ export interface DATA_PCK {
 
 export class Loader extends Object
 {
-    private result :string;
+    private result: string = "";
     private allowedServers :URL[]=[];
 
-    constructor(_serverAddrArray :string[]=["127.0.0.1:5000"])
+    constructor(_serverAddrArray :string[]=["http://127.0.0.1:5000"])
     {
         super();
 
         for(let x of _serverAddrArray.keys())
-        {   console.log(`Server address: ${_serverAddrArray[x]}`);
+        {   console.log(`Reading Server address: ${_serverAddrArray[x]}`);
             if(URL.canParse(_serverAddrArray[x]))
             {
                 let url = URL.parse(_serverAddrArray[x]);
@@ -47,6 +47,7 @@ export class Loader extends Object
     {
         for(let entry in this.allowedServers)
             {
+                console.log(`Allowed server: ${this.allowedServers[entry].host} vs. ${_url}`);
                 if( this.allowedServers[entry].host === _url)
                 { return true; }
             }
@@ -100,6 +101,7 @@ export class Loader extends Object
     //
     public async receiveData(_data: any, _type :ResponseType, _status :number, _url:string)
     {
+        console.log(`In receiveData von URL: ${_url} mit Nachricht: ${_type} und Daten: ${JSON.stringify(_data)}`);
         // Check URL first
         if(true === this.isURLAllowed(_url))
         {
